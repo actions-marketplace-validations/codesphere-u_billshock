@@ -282,3 +282,12 @@ def test_skill_docs_and_manifests_consistent() -> None:
     # Ensure rule table count matches RULE_META
     found_ids = set(re.findall(r"BILL\d{3}", rules_md))
     assert found_ids == set(billshock.RULE_META.keys())
+
+    # Ensure README action workflow snippet matches real action.yml inputs
+    readme_md = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    action_yml = (REPO_ROOT / "action.yml").read_text(encoding="utf-8")
+    for expected_key in ("path:", "diff:", "fail-on:", "min-score:", "sarif-file:"):
+        assert expected_key in readme_md
+        assert expected_key.rstrip(":") in action_yml
+    for stale_key in ("diff-ref:", "upload-sarif:"):
+        assert stale_key not in readme_md

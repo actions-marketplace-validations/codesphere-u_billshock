@@ -24,7 +24,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 MAX_FILE_BYTES = 512 * 1024
 
 SKIP_FILE_SUFFIXES = (

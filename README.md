@@ -45,7 +45,7 @@ python3 skills/billshock/scripts/billshock.py . --format sarif --output billshoc
 ### 3. Run Ephemerally via `uvx`
 
 ```bash
-uvx --from git+https://github.com/codesphere-u/billshock@v1.0.0 billshock . --diff HEAD
+uvx --from git+https://github.com/codesphere-u/billshock@v1 billshock . --diff HEAD
 ```
 
 ### 4. GitHub Actions CI Gate (`codesphere-u/billshock@v1`)
@@ -68,11 +68,16 @@ jobs:
 
       - uses: codesphere-u/billshock@v1
         with:
-          target: .
-          diff-ref: origin/${{ github.base_ref }}
+          path: .
+          diff: origin/${{ github.base_ref }}
           fail-on: high
           min-score: "80"
-          upload-sarif: "true"
+          sarif-file: billshock.sarif
+
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: billshock.sarif
 ```
 
 ---
@@ -82,7 +87,7 @@ jobs:
 ### Runaway App (`tests/fixtures/runaway_app`)
 
 ```text
-BillShock v1.0.0 — Spend-Safety & Runaway-Cost Report
+BillShock v1.0.1 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/runaway_app | Files scanned: 4 | AI calls: 2 | DB ops: 1 | HTTP: 5 | Crons: 1
 Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 
@@ -104,7 +109,7 @@ Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 ### Hardened App (`tests/fixtures/clean_app`)
 
 ```text
-BillShock v1.0.0 — Spend-Safety & Runaway-Cost Report
+BillShock v1.0.1 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/clean_app | Files scanned: 3 | AI calls: 1 | DB ops: 1 | HTTP: 3 | Crons: 2
 Score:  100/100 (SAFE)  [critical=0 high=0 medium=0 low=0]
 

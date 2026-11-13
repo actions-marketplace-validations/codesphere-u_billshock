@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "billshock-audit"
-version = "1.0.0"
+version = "1.0.1"
 description = "Deterministic Agent Skill & CLI exposing runaway loops, uncapped AI token bombs, N+1 DB egress & cost regressions."
 readme = "README.md"
 license = "MIT"

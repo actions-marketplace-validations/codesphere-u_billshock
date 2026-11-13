@@ -1,6 +1,6 @@
 {
   "name": "billshock",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Deterministic Spend-Safety & Runaway-Cost auditor exposing infinite useEffect loops, uncapped AI token bombs, N+1 DB scans, connection pool leaks, and aggressive crons.",
   "author": {
     "name": "codesphere-u",

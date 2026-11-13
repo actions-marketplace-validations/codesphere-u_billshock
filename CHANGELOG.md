@@ -5,6 +5,12 @@ All notable changes to **BillShock** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-11-14
+
+### Fixed
+- Align `README.md` GitHub Actions workflow inputs (`path`, `diff`, `fail-on`, `min-score`, `sarif-file`) and SARIF upload snippet cleanly with `action.yml`.
+- Add test guard asserting `README.md` workflow input examples never drift from `action.yml`.
+
 ## [1.0.0] - 2026-11-14
 
 ### Added
