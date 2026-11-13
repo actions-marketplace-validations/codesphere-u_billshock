@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/nightly-cleanup",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "functions": {
+    "src/app/api/chat/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}

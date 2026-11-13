@@ -1,0 +1,21 @@
+{
+  "name": "billshock-marketplace",
+  "owner": {
+    "name": "codesphere-u",
+    "url": "https://github.com/codesphere-u"
+  },
+  "plugins": [
+    {
+      "name": "billshock",
+      "source": "./",
+      "description": "Prevent overnight cloud, AI & DB bill shock with deterministic static checks.",
+      "version": "1.0.0",
+      "author": {
+        "name": "codesphere-u"
+      },
+      "repository": "https://github.com/codesphere-u/billshock",
+      "license": "MIT",
+      "strict": false
+    }
+  ]
+}

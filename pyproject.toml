@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "billshock-audit"
+version = "1.0.0"
+description = "Deterministic Agent Skill & CLI exposing runaway loops, uncapped AI token bombs, N+1 DB egress & cost regressions."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "codesphere-u" }]
+keywords = [
+  "ai-agents",
+  "agent-skills",
+  "finops",
+  "static-analysis",
+  "cost-guardrails",
+  "serverless",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/codesphere-u/billshock"
+Repository = "https://github.com/codesphere-u/billshock"
+Issues = "https://github.com/codesphere-u/billshock/issues"
+
+[project.scripts]
+billshock = "billshock:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=9.0.3,<10",
+  "ruff>=0.8,<1",
+  "mypy>=1.13,<2",
+]
+
+[tool.setuptools]
+py-modules = ["billshock"]
+
+[tool.setuptools.package-dir]
+"" = "skills/billshock/scripts"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unused_configs = true
+files = ["skills/billshock/scripts/billshock.py"]
