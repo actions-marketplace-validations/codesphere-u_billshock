@@ -398,3 +398,15 @@ def test_diff_ignores_comments_and_catches_business_hours_sub5m_cron(tmp_path: P
     rules = [f["rule_id"] for f in report["findings"]]
     assert "BILL015" not in rules
     assert "BILL016" in rules
+
+
+def test_installed_agent_skill_directories_are_skipped(tmp_path: Path) -> None:
+    (tmp_path / ".agents" / "skills" / "billshock" / "scripts").mkdir(parents=True)
+    (tmp_path / ".agents" / "skills" / "billshock" / "scripts" / "billshock.py").write_text("x = 1\n", encoding="utf-8")
+    (tmp_path / ".claude" / "plugins").mkdir(parents=True)
+    (tmp_path / ".claude" / "plugins" / "helper.py").write_text("import requests\nrequests.get('https://x.test')\n", encoding="utf-8")
+
+    report = billshock.run_scan(tmp_path)
+    assert report["files_scanned"] == 0
+    assert report["findings"] == []
+    assert report["score"] == 100

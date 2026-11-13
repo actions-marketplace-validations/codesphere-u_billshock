@@ -10,7 +10,7 @@ license: MIT
 compatibility: Requires Python 3.10+ (stdlib only, zero external packages) and optional git for --diff mode.
 metadata:
   author: codesphere-u
-  version: "1.0.2"
+  version: "1.0.3"
   repository: https://github.com/codesphere-u/billshock
 ---
 

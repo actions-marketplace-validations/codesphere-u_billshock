@@ -23,29 +23,39 @@
 
 ## Quick Start
 
-### 1. Install as an AI Agent Skill ([skills.sh](https://skills.sh) / Claude / Cursor / Codex / Antigravity)
+### 1. Install as an AI Agent Skill ([skills.sh](https://skills.sh) / Antigravity / Cursor / Codex / Claude)
 
 ```bash
 npx skills add codesphere-u/billshock
 ```
 
-### 2. Zero-Dependency CLI (`python3` stdlib only, Python 3.10+)
+Then run directly against any repo using the installed skill script:
 
 ```bash
-# Audit current repo
-python3 skills/billshock/scripts/billshock.py .
-
-# Audit local repo AND uncommitted git diff cost regressions
-python3 skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high --min-score 80
-
-# Emit SARIF 2.1.0 for GitHub Code Scanning
-python3 skills/billshock/scripts/billshock.py . --format sarif --output billshock.sarif
+python3 .agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high --min-score 80
 ```
 
-### 3. Run Ephemerally via `uvx`
+### 2. Install as a Claude Code Plugin
+
+```text
+/plugin install billshock --marketplace codesphere-u/billshock
+```
+
+### 3. Install Global CLI (`uv` or `pip`) or Run Zero-Install (`uvx` / `curl`)
 
 ```bash
+# Ephemeral zero-install run via uvx
 uvx --from git+https://github.com/codesphere-u/billshock@v1 billshock . --diff HEAD
+
+# Persistent global CLI via uv tool (or pip install)
+uv tool install git+https://github.com/codesphere-u/billshock@v1
+pip install git+https://github.com/codesphere-u/billshock@v1
+
+# One-line zero-clone runner (Python 3.10+ stdlib only)
+curl -fsSL https://raw.githubusercontent.com/codesphere-u/billshock/v1/skills/billshock/scripts/billshock.py | python3 - .
+
+# Emit SARIF 2.1.0 for GitHub Code Scanning
+billshock . --format sarif --output billshock.sarif
 ```
 
 ### 4. GitHub Actions CI Gate (`codesphere-u/billshock@v1`)
@@ -87,7 +97,7 @@ jobs:
 ### Runaway App (`tests/fixtures/runaway_app`)
 
 ```text
-BillShock v1.0.2 — Spend-Safety & Runaway-Cost Report
+BillShock v1.0.3 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/runaway_app | Files scanned: 4 | AI calls: 2 | DB ops: 1 | HTTP: 5 | Crons: 1
 Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 
@@ -109,7 +119,7 @@ Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 ### Hardened App (`tests/fixtures/clean_app`)
 
 ```text
-BillShock v1.0.2 — Spend-Safety & Runaway-Cost Report
+BillShock v1.0.3 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/clean_app | Files scanned: 3 | AI calls: 1 | DB ops: 1 | HTTP: 3 | Crons: 2
 Score:  100/100 (SAFE)  [critical=0 high=0 medium=0 low=0]
 

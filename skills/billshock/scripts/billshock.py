@@ -24,7 +24,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-VERSION = "1.0.2"
+VERSION = "1.0.3"
 MAX_FILE_BYTES = 512 * 1024
 
 SKIP_FILE_SUFFIXES = (
@@ -39,6 +39,11 @@ SKIP_FILE_SUFFIXES = (
 
 EXCLUDED_DIRS = {
     ".git",
+    ".agents",
+    ".claude",
+    ".cursor",
+    ".codex",
+    ".gemini",
     "node_modules",
     ".next",
     "dist",
@@ -1637,7 +1642,7 @@ def run_scan(
             rel_path = fpath.relative_to(root).as_posix()
             if is_excluded(rel_path, cfg):
                 continue
-            if rel_path == "skills/billshock/scripts/billshock.py":
+            if rel_path.endswith("skills/billshock/scripts/billshock.py"):
                 continue
             try:
                 raw_text = fpath.read_text(encoding="utf-8", errors="ignore")

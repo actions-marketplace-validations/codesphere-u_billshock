@@ -1,5 +1,6 @@
 {
   "name": "billshock-marketplace",
+  "description": "Deterministic spend-safety and runaway-cost auditing skills and hooks for AI coding agents.",
   "owner": {
     "name": "codesphere-u",
     "url": "https://github.com/codesphere-u"
@@ -9,7 +10,7 @@
       "name": "billshock",
       "source": "./",
       "description": "Prevent overnight cloud, AI & DB bill shock with deterministic static checks.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "author": {
         "name": "codesphere-u"
       },
