@@ -24,7 +24,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 MAX_FILE_BYTES = 512 * 1024
 
 SKIP_FILE_SUFFIXES = (
@@ -213,8 +213,8 @@ AUTH_GUARD_RE = re.compile(
     r"\b("
     r"getSession|getServerSession|currentUser|auth\(|requireAuth|authenticate|"
     r"verifyToken|verifyJwt|decodeToken|HTTPBearer|APIKeyHeader|"
-    r"get_current_user|constructEvent|stripe-signature|x-hub-signature|"
-    r"x-api-key|api_key|apiKey|authorization|webhook"
+    r"get_current_user|constructEvent|verifySignature|verifyWebhook|compare_digest|svix|"
+    r"stripe-signature|x-hub-signature|x-api-key|api_key|apiKey|authorization"
     r")\b",
     re.IGNORECASE,
 )
@@ -427,6 +427,11 @@ def mask_js_comments(source: str) -> str:
                 out.append("\n" if ch == "\n" else " ")
             i += 1
         else:
+            if ch == "\n" and quote in ("'", '"'):
+                out.append(ch)
+                state = "code"
+                i += 1
+                continue
             if ch == "\\":
                 out.append(ch)
                 if i + 1 < n:
@@ -455,10 +460,12 @@ def extract_balanced_span(text: str, open_idx: int, open_ch: str = "(", close_ch
     while i < n:
         ch = text[i]
         if quote:
-            if ch == "\\":
+            if ch == "\n" and quote in ("'", '"'):
+                quote = ""
+            elif ch == "\\":
                 i += 2
                 continue
-            if ch == quote:
+            elif ch == quote:
                 quote = ""
         else:
             if ch in ("'", '"', "`"):
@@ -487,7 +494,9 @@ def split_top_level_args(inner: str) -> list[str]:
         ch = inner[i]
         if quote:
             buf.append(ch)
-            if ch == "\\":
+            if ch == "\n" and quote in ("'", '"'):
+                quote = ""
+            elif ch == "\\":
                 if i + 1 < n:
                     buf.append(inner[i + 1])
                     i += 2
@@ -577,7 +586,9 @@ JS_MODULE_CACHE_RE = re.compile(
     re.MULTILINE,
 )
 
-NET_CALL_SIGNAL_RE = re.compile(r"\b(fetch|axios|trpc|queryClient|mutate|invalidateQueries)\b|/api/")
+NET_CALL_SIGNAL_RE = re.compile(
+    r"\b(?:fetch|axios|trpc|queryClient|invalidateQueries)\b|\b(?:mutate|mutateAsync)\s*\("
+)
 TOKEN_CEIL_RE = re.compile(r"\b(max_tokens|maxOutputTokens|max_output_tokens|max_completion_tokens|maxTokens)\b")
 DB_LIMIT_GUARD_RE = re.compile(
     r"\b(take|limit|range|single|maybeSingle|cursor|count|where\s*:\s*\{\s*(?:id|[a-zA-Z]+Id))\b"
@@ -781,6 +792,7 @@ def scan_js_ts_file(
     # BILL010 & BILL011: Server-side fetch/axios missing timeout + excessive maxDuration
     if server_route or Path(rel_path).suffix.lower() in {".ts", ".js", ".mjs", ".cjs"}:
         is_ui_component = "/components/" in rel_path.lower() or rel_path.lower().endswith((".tsx", ".jsx", ".vue", ".svelte"))
+        file_has_timeout_cfg = bool(TIMEOUT_OPT_RE.search(masked))
         for m in JS_FETCH_CALL_RE.finditer(masked):
             inner, _ = extract_balanced_span(masked, m.end() - 1, "(", ")")
             if not inner:
@@ -794,7 +806,12 @@ def scan_js_ts_file(
                 continue
             metrics.outbound_http += 1
             opts_arg = args[1] if len(args) >= 2 else ""
-            if (not opts_arg or not TIMEOUT_OPT_RE.search(opts_arg)) and (server_route or "http" in url_arg):
+            opts_is_ident = bool(opts_arg and re.fullmatch(r"[A-Za-z_$][\w$.]*", opts_arg.strip()))
+            has_timeout = bool(
+                (opts_arg and TIMEOUT_OPT_RE.search(opts_arg))
+                or (opts_is_ident and file_has_timeout_cfg)
+            )
+            if not has_timeout and (server_route or "http" in url_arg):
                 ln = line_number_at(masked, m.start())
                 add_finding(
                     findings,
@@ -805,6 +822,33 @@ def scan_js_ts_file(
                     ln,
                     "Server-side `fetch()` omits `signal: AbortSignal.timeout(...)` timeout.",
                 )
+
+        has_axios_create_timeout = bool(re.search(r"\baxios\.create\s*\(\s*\{[^}]*\btimeout\b", masked))
+        if server_route and not is_ui_component and not has_axios_create_timeout:
+            for m in JS_AXIOS_CALL_RE.finditer(masked):
+                if masked[max(0, m.start() - 1) : m.end()].startswith("."):
+                    continue
+                inner, _ = extract_balanced_span(masked, m.end() - 1, "(", ")")
+                if not inner:
+                    continue
+                if "axios.create" in masked[max(0, m.start() - 6) : m.end() + 10]:
+                    continue
+                metrics.outbound_http += 1
+                args = split_top_level_args(inner)
+                url_arg = args[0] if args else ""
+                if re.search(r"""^['"`]/api/""", url_arg.strip()):
+                    continue
+                if not TIMEOUT_OPT_RE.search(inner):
+                    ln = line_number_at(masked, m.start())
+                    add_finding(
+                        findings,
+                        cfg,
+                        raw_lines,
+                        "BILL010",
+                        rel_path,
+                        ln,
+                        "Server-side `axios` request omits `timeout` or `signal` deadline.",
+                    )
 
     dur_m = JS_MAX_DURATION_RE.search(masked)
     if (
@@ -1088,6 +1132,7 @@ def scan_python_file(
                 )
 
     # Function-level checks: BILL005 (public paid route), BILL007 (unbounded scan), BILL012 (pool in handler), BILL013 (cache mutation)
+    unbounded_scan_spans: list[tuple[int, int]] = []
     for fn in ast.walk(tree):
         if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
@@ -1110,9 +1155,19 @@ def scan_python_file(
                     )
                     break
 
-        if (is_endpoint or has_route_file) and any(p in fn_src for p in PY_UNBOUNDED_SCAN_PATTERNS) and not re.search(
-            r"\b(?:limit|LIMIT|paginate|page_size)\b|\[:\s*\d+\]", fn_src
+        fn_span = (fn.lineno, getattr(fn, "end_lineno", fn.lineno) or fn.lineno)
+        nested_in_reported = any(s <= fn_span[0] and fn_span[1] <= e for s, e in unbounded_scan_spans)
+        if (
+            not nested_in_reported
+            and (is_endpoint or has_route_file)
+            and any(p in fn_src for p in PY_UNBOUNDED_SCAN_PATTERNS)
+            and not re.search(
+                r"\b(?:limit|LIMIT|paginate|Paginator|paginate_queryset|page_size)\b|"
+                r"\.(?:iterator|count|exists)\s*\(|\[:\s*[A-Za-z0-9_]+\]",
+                fn_src,
+            )
         ):
+            unbounded_scan_spans.append(fn_span)
             add_finding(
                 findings,
                 cfg,
@@ -1224,8 +1279,12 @@ def scan_infra_configs(
             txt = wf.read_text(encoding="utf-8", errors="ignore")
             raw_lines = txt.splitlines()
             for ln, line in enumerate(raw_lines, 1):
-                if "cron:" in line:
-                    m = CRON_RE.search(line.split("cron:", 1)[1])
+                stripped = line.lstrip()
+                if stripped.startswith("#"):
+                    continue
+                if "cron:" in stripped:
+                    after_cron = stripped.split("cron:", 1)[1].split("#", 1)[0]
+                    m = CRON_RE.search(after_cron)
                     if m:
                         expr = " ".join(m.groups())
                         metrics.cron_jobs += 1
@@ -1252,7 +1311,7 @@ DIFF_GUARD_RE = re.compile(
     r"AbortSignal\.timeout|timeout=|take:|LIMIT\b"
     r")"
 )
-DIFF_CRON_MIN_RE = re.compile(r"""(?:cron|schedule)["']?\s*:\s*["'](\*(?:/[1-4])?(?:\s+\*){4})["']""")
+DIFF_CRON_MIN_RE = re.compile(r"""(?:cron|schedule)["']?\s*:\s*["'](\*(?:/[1-4])?(?:\s+[*/0-9,-]+){4})["']""")
 
 
 def scan_git_diff(
@@ -1308,11 +1367,12 @@ def scan_git_diff(
                 continue
             if line.startswith("+") and not line.startswith("+++"):
                 content = line[1:]
-                if "billshock-ignore" not in content:
+                stripped = content.lstrip()
+                if stripped and not stripped.startswith(("#", "//", "/*", "*")) and "billshock-ignore" not in content:
                     if DIFF_GUARD_RE.search(content):
                         added_guards[cur_file] += 1
                     m_cron = DIFF_CRON_MIN_RE.search(content)
-                    if m_cron:
+                    if m_cron and is_aggressive_cron(m_cron.group(1)):
                         add_finding(
                             findings,
                             cfg,
@@ -1326,9 +1386,11 @@ def scan_git_diff(
                 cur_line += 1
             elif line.startswith("-") and not line.startswith("---"):
                 content = line[1:]
-                m_rm = DIFF_GUARD_RE.search(content)
-                if m_rm:
-                    removed_guards[cur_file].append((max(1, cur_line), content.strip()))
+                stripped = content.lstrip()
+                if stripped and not stripped.startswith(("#", "//", "/*", "*")):
+                    m_rm = DIFF_GUARD_RE.search(content)
+                    if m_rm:
+                        removed_guards[cur_file].append((max(1, cur_line), content.strip()))
 
     for path_key, rms in removed_guards.items():
         if len(rms) > added_guards.get(path_key, 0):
@@ -1563,6 +1625,8 @@ def run_scan(
             if fname.lower().endswith(SKIP_FILE_SUFFIXES):
                 continue
             fpath = Path(dirpath) / fname
+            if fpath.is_symlink():
+                continue
             if fpath.suffix.lower() not in CODE_EXTENSIONS:
                 continue
             try:

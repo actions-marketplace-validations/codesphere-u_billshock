@@ -270,6 +270,7 @@ def test_skill_docs_and_manifests_consistent() -> None:
     marketplace_json = json.loads((REPO_ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
 
     assert f'version = "{billshock.VERSION}"' in pyproject
+    assert f'version: "{billshock.VERSION}"' in skill_md
     assert plugin_json["version"] == billshock.VERSION
     assert marketplace_json["plugins"][0]["version"] == billshock.VERSION
     assert "billshock.py" in skill_md
@@ -291,3 +292,109 @@ def test_skill_docs_and_manifests_consistent() -> None:
         assert expected_key.rstrip(":") in action_yml
     for stale_key in ("diff-ref:", "upload-sarif:"):
         assert stale_key not in readme_md
+
+
+def test_production_edge_cases_and_precision(tmp_path: Path) -> None:
+    # 1. JSX apostrophes should never corrupt subsequent TSX effect/interval parsing
+    (tmp_path / "Panel.tsx").write_text(
+        "import { useEffect } from 'react';\n"
+        "export function Panel() {\n"
+        "  const note = <p>We're ready and it's cached.</p>;\n"
+        "  useEffect(() => {\n"
+        "    fetch('/api/ok');\n"
+        "  }, []);\n"
+        "  return <div>{note}</div>;\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    # 2. Pure string Promise.all(map) URL builder and variable fetch init with AbortSignal.timeout
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "routes.ts").write_text(
+        "export const formatUrls = (ids: string[]) => Promise.all(ids.map((id) => `/api/items/${id}`));\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "src" / "api").mkdir()
+    (tmp_path / "src" / "api" / "proxy.ts").write_text(
+        "export async function GET() {\n"
+        "  const init = { signal: AbortSignal.timeout(4000) };\n"
+        "  return await fetch('https://upstream.example.com/data', init);\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    # 3. Axios without timeout on server route triggers BILL010, but axios.create({ timeout }) passes
+    (tmp_path / "src" / "api" / "axios-bad.ts").write_text(
+        "import axios from 'axios';\n"
+        "export async function GET() {\n"
+        "  return await axios.get('https://slow.example.com/items');\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "src" / "api" / "axios-good.ts").write_text(
+        "import axios from 'axios';\n"
+        "const client = axios.create({ timeout: 3000 });\n"
+        "export async function GET() {\n"
+        "  return await client.get('https://fast.example.com/items');\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    # 4. Unverified webhook endpoint MUST still trigger BILL005
+    (tmp_path / "webhook.py").write_text(
+        "import openai\n"
+        "from fastapi import APIRouter\n"
+        "router = APIRouter()\n"
+        "@router.post('/webhook')\n"
+        "def receive_webhook(payload: dict):\n"
+        "    return openai.chat.completions.create(model='gpt-4o', max_tokens=100, messages=[])\n",
+        encoding="utf-8",
+    )
+
+    # 5. Commented workflow cron should NOT trigger BILL014
+    wf_dir = tmp_path / ".github" / "workflows"
+    wf_dir.mkdir(parents=True)
+    (wf_dir / "commented.yml").write_text(
+        "name: Manual\non:\n  workflow_dispatch:\n#  schedule:\n#    - cron: '* * * * *'\n",
+        encoding="utf-8",
+    )
+
+    # 6. Django Paginator + nested closure in Python route: Paginator is safe, and nested closures don't duplicate
+    (tmp_path / "views.py").write_text(
+        "from django.core.paginator import Paginator\n"
+        "def list_paginated(request):\n"
+        "    return Paginator(Order.objects.all(), 50)\n",
+        encoding="utf-8",
+    )
+
+    # 7. Symlinked files outside or pointing locally are skipped safely
+    real_bad = tmp_path / "ignored_target.txt"
+    real_bad.write_text("x", encoding="utf-8")
+    (tmp_path / "link.py").symlink_to(real_bad)
+
+    report = billshock.run_scan(tmp_path)
+    by_file = {(f["rule_id"], f["file"]) for f in report["findings"]}
+
+    assert ("BILL010", "src/api/axios-bad.ts") in by_file
+    assert ("BILL005", "webhook.py") in by_file
+    assert len(report["findings"]) == 2, f"Unexpected findings: {report['findings']}"
+
+
+def test_diff_ignores_comments_and_catches_business_hours_sub5m_cron(tmp_path: Path) -> None:
+    _init_git_repo(tmp_path)
+    wf = tmp_path / ".github" / "workflows" / "sync.yml"
+    wf.parent.mkdir(parents=True)
+    wf.write_text("name: Sync\non:\n  workflow_dispatch:\n", encoding="utf-8")
+    code = tmp_path / "app.ts"
+    code.write_text("export const ok = true;\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=tmp_path, check=True, capture_output=True)
+
+    # Adding comments containing removed words shouldn't false-positive, while */2 9-17 * * 1-5 triggers BILL016
+    code.write_text("export const ok = true;\n// removed max_tokens and timeout= in comment\n", encoding="utf-8")
+    wf.write_text("name: Sync\non:\n  schedule:\n    - cron: '*/2 9-17 * * 1-5'\n", encoding="utf-8")
+
+    report = billshock.run_scan(tmp_path, diff_ref="HEAD", with_diff=True)
+    rules = [f["rule_id"] for f in report["findings"]]
+    assert "BILL015" not in rules
+    assert "BILL016" in rules

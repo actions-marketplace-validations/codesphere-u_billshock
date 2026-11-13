@@ -5,6 +5,15 @@ All notable changes to **BillShock** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-11-14
+
+### Hardened
+- Recover cleanly on unescaped single-line apostrophes inside JSX/TSX text (for example `<p>We're ready</p>`) so React strings never corrupt downstream comment/brace scanning.
+- Wire server-side `axios` timeout detection (`BILL010`) with exemption for `axios.create({ timeout })` and variable `fetch(url, init)` objects when `AbortSignal.timeout`/`signal` is configured.
+- Prevent unverified `/webhook` routes from bypassing `BILL005` unless cryptographic signature/auth verification is present.
+- Exempt Django `Paginator`, `.iterator()`, `.count()`, and `.exists()` from `BILL007`, and avoid duplicate `BILL007` reports from nested Python closures.
+- Skip YAML/code comments in workflow cron scans (`BILL014`) and git diffs (`BILL015`/`BILL016`), generalize `BILL016` cron detection to non-`*` time ranges (such as `*/2 9-17 * * 1-5`), skip symlinks in `run_scan`, tighten `BILL008` string-array false positives, add `.dockerignore`, and sync `SKILL.md` metadata version.
+
 ## [1.0.1] - 2026-11-14
 
 ### Fixed
