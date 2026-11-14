@@ -18,13 +18,14 @@ import os
 import re
 import subprocess
 import sys
+import warnings
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-VERSION = "1.0.3"
+VERSION = "1.0.4"
 MAX_FILE_BYTES = 512 * 1024
 
 SKIP_FILE_SUFFIXES = (
@@ -44,7 +45,20 @@ EXCLUDED_DIRS = {
     ".cursor",
     ".codex",
     ".gemini",
+    ".local",
+    ".vscode",
+    ".config",
+    ".cache",
     "node_modules",
+    "site-packages",
+    "dist-packages",
+    "Library",
+    "AppData",
+    "Applications",
+    "Movies",
+    "Music",
+    "Pictures",
+    "Public",
     ".next",
     "dist",
     "build",
@@ -58,7 +72,6 @@ EXCLUDED_DIRS = {
     ".mypy_cache",
     ".ruff_cache",
     ".turbo",
-    ".cache",
     ".tox",
     ".eggs",
     "target",
@@ -580,7 +593,7 @@ JS_PROMISE_ALL_MAP_RE = re.compile(r"\bPromise\.(?:all|allSettled)\s*\(\s*[A-Za-
 JS_WHILE_TRUE_RE = re.compile(r"\bwhile\s*\(\s*true\s*\)\s*\{")
 JS_FETCH_CALL_RE = re.compile(r"(?<![.\w$])\bfetch\s*\(")
 JS_AXIOS_CALL_RE = re.compile(r"\baxios(?:\.(?:get|post|put|patch|delete|request))?\s*\(")
-JS_DB_CLIENT_NEW_RE = re.compile(r"\bnew\s+(?:PrismaClient|Pool|Client)\s*\(|\bcreateClient\s*\(")
+JS_DB_CLIENT_NEW_RE = re.compile(r"\bnew\s+(?:PrismaClient|Pool|Client)\s*\(|(?<!await\s)\bcreateClient\s*\(")
 JS_ROUTE_HANDLER_RE = re.compile(
     r"(?:\bexport\s+(?:async\s+)?function\s+(?:GET|POST|PUT|PATCH|DELETE)\b|"
     r"\b(?:app|router)\.(?:get|post|put|patch|delete|all)\s*\()"
@@ -596,7 +609,7 @@ NET_CALL_SIGNAL_RE = re.compile(
 )
 TOKEN_CEIL_RE = re.compile(r"\b(max_tokens|maxOutputTokens|max_output_tokens|max_completion_tokens|maxTokens)\b")
 DB_LIMIT_GUARD_RE = re.compile(
-    r"\b(take|limit|range|single|maybeSingle|cursor|count|where\s*:\s*\{\s*(?:id|[a-zA-Z]+Id))\b"
+    r"\b(take|limit|range|single|maybeSingle|cursor|count|head|where\s*:\s*\{\s*(?:id|[a-zA-Z]+Id))\b"
 )
 TIMEOUT_OPT_RE = re.compile(r"\b(signal|timeout|AbortSignal)\b")
 
@@ -741,7 +754,7 @@ def scan_js_ts_file(
         if not server_route:
             continue
         inner, end_idx = extract_balanced_span(masked, m.end() - 1, "(", ")")
-        tail_chain = masked[end_idx : end_idx + 120]
+        tail_chain = masked[end_idx : end_idx + 240].split(";", 1)[0]
         if not DB_LIMIT_GUARD_RE.search(inner) and not DB_LIMIT_GUARD_RE.search(tail_chain):
             ln = line_number_at(masked, m.start())
             add_finding(
@@ -876,7 +889,14 @@ def scan_js_ts_file(
 
     # BILL012: DB/pool client instantiated inside route handler without singleton cache
     if server_route:
+        is_supabase_ssr_or_http = bool(re.search(r"@supabase/|/supabase/|createServerClient", masked))
         for m in JS_DB_CLIENT_NEW_RE.finditer(masked):
+            call_head = m.group(0).lstrip()
+            if call_head.startswith("createClient"):
+                span_inner, _ = extract_balanced_span(masked, m.end() - 1, "(", ")")
+                ctx_before = masked[max(0, m.start() - 24) : m.start()]
+                if is_supabase_ssr_or_http or not span_inner.strip() or re.search(r"\bawait\s*$", ctx_before):
+                    continue
             ln = line_number_at(masked, m.start())
             if "globalThis" not in masked and "global." not in masked:
                 add_finding(
@@ -921,16 +941,12 @@ PY_AI_CALL_NAMES = {
     "litellm.acompletion",
 }
 
-PY_PAID_KEYWORDS = (
-    "completions.create",
-    "responses.create",
-    "messages.create",
-    "generate_content",
-    "litellm.completion",
-    "emails.send",
-    "sendgrid",
-    "twilio",
-    "replicate.run",
+PY_PAID_CALL_RE = re.compile(
+    r"(?:^|\.)(?:completions\.create|responses\.create|messages\.create|"
+    r"generate_content(?:_async)?|litellm\.a?completion|"
+    r"emails\.send|replicate\.run)(?:\.|$)|"
+    r"(?:^|\.)(?:sendgrid|twilio)(?:[._]|$)",
+    re.IGNORECASE,
 )
 
 PY_HTTP_NO_TIMEOUT_NAMES = {
@@ -949,8 +965,28 @@ PY_HTTP_NO_TIMEOUT_NAMES = {
     "urllib.request.urlopen",
 }
 
-PY_DB_METHODS = {"execute", "scalars", "get", "query", "all", "fetchall", "first", "one"}
+PY_DB_EXEC_RE = re.compile(
+    r"(?:^|\.)(?:[A-Za-z0-9_]*_)?(?:db|session|cursor|cur|conn|connection|objects|prisma|supabase|pool)"
+    r"\.(?:execute|scalars|scalar|query|all|fetchall|fetchone|first|one)$",
+    re.IGNORECASE,
+)
+PY_DB_GET_RE = re.compile(
+    r"(?:^|\.)(?:self\._?)?(?:db_?session|session|objects)\.get$",
+    re.IGNORECASE,
+)
 PY_UNBOUNDED_SCAN_PATTERNS = (".objects.all", "SELECT * FROM")
+
+
+def _is_py_ai_call(fn_name: str) -> bool:
+    return bool(fn_name and any(fn_name == sfx or fn_name.endswith("." + sfx) for sfx in PY_AI_CALL_NAMES))
+
+
+def _is_py_paid_call(fn_name: str) -> bool:
+    return bool(fn_name and PY_PAID_CALL_RE.search(fn_name))
+
+
+def _is_py_db_call(fn_name: str) -> bool:
+    return bool(fn_name and (PY_DB_EXEC_RE.search(fn_name) or PY_DB_GET_RE.search(fn_name)))
 
 
 def _unparse_name(node: ast.AST) -> str:
@@ -1013,7 +1049,9 @@ def scan_python_file(
 
     raw_lines = raw_text.splitlines()
     try:
-        tree = ast.parse(raw_text, filename=rel_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", SyntaxWarning)
+            tree = ast.parse(raw_text, filename=rel_path)
     except SyntaxError:
         return
 
@@ -1047,7 +1085,7 @@ def scan_python_file(
         if not isinstance(node, ast.Call):
             continue
         fn_name = _unparse_name(node.func)
-        if any(fn_name.endswith(sfx) for sfx in PY_AI_CALL_NAMES):
+        if _is_py_ai_call(fn_name):
             metrics.ai_calls += 1
             if not _call_has_kw(node, {"max_tokens", "max_output_tokens", "max_completion_tokens", "generation_config"}):
                 add_finding(
@@ -1083,7 +1121,7 @@ def scan_python_file(
             for sub in ast.walk(node):
                 if isinstance(sub, ast.Call):
                     sub_name = _unparse_name(sub.func)
-                    if any(k in sub_name for k in PY_PAID_KEYWORDS):
+                    if _is_py_paid_call(sub_name):
                         add_finding(
                             findings,
                             cfg,
@@ -1094,10 +1132,7 @@ def scan_python_file(
                             f"Paid SDK call `{sub_name}` invoked inside unbounded loop.",
                         )
                         break
-                    if (
-                        sub_name.split(".")[-1] in PY_DB_METHODS
-                        and any(tok in sub_name.lower() for tok in ("session", "db", "cursor", "conn", "objects", "prisma", "supabase"))
-                    ):
+                    if _is_py_db_call(sub_name):
                         metrics.db_ops += 1
                         add_finding(
                             findings,
@@ -1119,9 +1154,9 @@ def scan_python_file(
             has_ext = any(
                 isinstance(sub, ast.Call)
                 and (
-                    any(k in _unparse_name(sub.func) for k in PY_PAID_KEYWORDS)
+                    _is_py_paid_call(_unparse_name(sub.func))
                     or _unparse_name(sub.func) in PY_HTTP_NO_TIMEOUT_NAMES
-                    or _unparse_name(sub.func).split(".")[-1] in PY_DB_METHODS
+                    or _is_py_db_call(_unparse_name(sub.func))
                 )
                 for sub in ast.walk(node)
             )
@@ -1148,7 +1183,7 @@ def scan_python_file(
         if is_endpoint and not _fn_uses_auth_dependency(fn) and not AUTH_GUARD_RE.search(raw_text) and not RATE_LIMIT_RE.search(raw_text):
             for c in calls:
                 cname = _unparse_name(c.func)
-                if any(k in cname for k in PY_PAID_KEYWORDS):
+                if _is_py_paid_call(cname):
                     add_finding(
                         findings,
                         cfg,
@@ -1625,7 +1660,7 @@ def run_scan(
     files_scanned = 0
 
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS)
+        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS and not d.startswith("."))
         for fname in sorted(filenames):
             if fname.lower().endswith(SKIP_FILE_SUFFIXES):
                 continue
@@ -1680,6 +1715,12 @@ def should_fail(findings: list[dict[str, Any]], score: int, fail_on: str, min_sc
     return any(SEVERITY_ORDER.get(f["severity"], 0) >= threshold for f in findings)
 
 
+def _is_unsafe_broad_root(target: Path) -> bool:
+    resolved = target.resolve()
+    home = Path.home().resolve()
+    return resolved == resolved.parent or resolved == home
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="billshock",
@@ -1700,6 +1741,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--baseline", type=Path, default=None, help="Suppress findings matching baseline JSON fingerprints")
     p.add_argument("--write-baseline", type=Path, default=None, help="Write current findings baseline JSON and exit 0")
     p.add_argument("--output", type=Path, default=None, help="Write report output to file as well as stdout")
+    p.add_argument("--allow-home", action="store_true", help="Allow scanning user home directory or filesystem root")
     p.add_argument("--no-color", action="store_true", help="Disable ANSI color in text output")
     p.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
     return p
@@ -1710,6 +1752,13 @@ def main(argv: list[str] | None = None) -> int:
     target = Path(args.target)
     if not target.is_dir():
         print(f"billshock: target directory does not exist: {target}", file=sys.stderr)
+        return 2
+    if not args.allow_home and _is_unsafe_broad_root(target):
+        print(
+            f"billshock: refusing to scan broad directory `{target.resolve()}` "
+            "(cd into a project repo, pass a project path like `billshock /path/to/repo`, or pass `--allow-home`).",
+            file=sys.stderr,
+        )
         return 2
     if args.min_score is not None and not 0 <= args.min_score <= 100:
         print(f"billshock: --min-score must be between 0 and 100, got {args.min_score}", file=sys.stderr)

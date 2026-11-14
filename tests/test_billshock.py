@@ -410,3 +410,106 @@ def test_installed_agent_skill_directories_are_skipped(tmp_path: Path) -> None:
     assert report["files_scanned"] == 0
     assert report["findings"] == []
     assert report["score"] == 100
+
+
+def test_broad_root_guard_and_hidden_dir_filtering(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(Path, "home", lambda: tmp_path)
+    assert billshock.main([str(tmp_path), "--no-color"]) == 2
+    assert "refusing to scan broad directory" in capsys.readouterr().err
+    assert billshock.main(["/", "--no-color"]) == 2
+
+    (tmp_path / ".local" / "lib").mkdir(parents=True)
+    (tmp_path / ".local" / "lib" / "bad.py").write_text("import requests\nrequests.get('https://x.test')\n", encoding="utf-8")
+    (tmp_path / ".vscode" / "ext").mkdir(parents=True)
+    (tmp_path / ".vscode" / "ext" / "poll.ts").write_text("while (true) { fetch('https://x.test'); }\n", encoding="utf-8")
+    (tmp_path / "pkg" / "site-packages" / "dep").mkdir(parents=True)
+    (tmp_path / "pkg" / "site-packages" / "dep" / "poll.py").write_text("while True:\n    requests.get('https://x.test')\n", encoding="utf-8")
+
+    wf = tmp_path / ".github" / "workflows" / "cron.yml"
+    wf.parent.mkdir(parents=True)
+    wf.write_text("on:\n  schedule:\n    - cron: '* * * * *'\n", encoding="utf-8")
+
+    assert billshock.main([str(tmp_path), "--allow-home", "--fail-on", "high", "--no-color"]) == 0
+    report = billshock.run_scan(tmp_path)
+    assert report["files_scanned"] == 0
+    assert [f["rule_id"] for f in report["findings"]] == ["BILL014"]
+
+
+def test_v104_false_positive_hardening_and_syntax_warnings(tmp_path: Path) -> None:
+    import warnings
+
+    # 1. Legacy escape sequence must NOT emit SyntaxWarning to stderr
+    (tmp_path / "legacy_re.py").write_text(
+        'import re\nPATTERN = re.compile("^.*\\.%s$")\n',
+        encoding="utf-8",
+    )
+
+    # 2. Python identifiers/dicts mimicking paid or DB names must NOT false-positive
+    (tmp_path / "clean_helpers.py").write_text(
+        "def run(items, source, generate_content_config_dict, all_queues_in_db_dict, connection, queue, interceptor, continuous_sessions):\n"
+        "    for item in items:\n"
+        "        _ = source.generate_contents()\n"
+        "        _ = generate_content_config_dict.items()\n"
+        "        _ = all_queues_in_db_dict.get(item)\n"
+        "        _ = connection.get('timeout')\n"
+        "        _ = continuous_sessions.get(item)\n"
+        "        _ = interceptor.pre_generate_content(item)\n"
+        "    while True:\n"
+        "        msg = queue.get()\n"
+        "        if msg is None:\n"
+        "            break\n",
+        encoding="utf-8",
+    )
+
+    # 3. Genuine issues still trigger reliably
+    (tmp_path / "real_issues.py").write_text(
+        "def bad(uids, session, model):\n"
+        "    for uid in uids:\n"
+        "        session.get(object, uid)\n"
+        "    return model.generate_content('hello')\n",
+        encoding="utf-8",
+    )
+
+    # 4. Next.js Supabase SSR client & head/chained queries are safe, while raw Pool triggers BILL012
+    (tmp_path / "src" / "app" / "api" / "items").mkdir(parents=True)
+    (tmp_path / "src" / "app" / "api" / "items" / "route.ts").write_text(
+        "import { createClient } from '@/utils/supabase/server';\n"
+        "export async function GET(head: Record<string, unknown>) {\n"
+        "  const supabase = await createClient();\n"
+        "  const total = await supabase.from('items').select('*', head);\n"
+        "  const page = await supabase.from('items').select('*').eq('a', '1').eq('b', '2').eq('c', '3').eq('d', '4').order('created_at').limit(25);\n"
+        "  return Response.json({ total, page });\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "src" / "app" / "api" / "raw").mkdir(parents=True)
+    (tmp_path / "src" / "app" / "api" / "raw" / "route.ts").write_text(
+        "import { Pool } from 'pg';\n"
+        "export async function GET() {\n"
+        "  const pool = new Pool();\n"
+        "  return Response.json({ ok: Boolean(pool) });\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always", SyntaxWarning)
+        report = billshock.run_scan(tmp_path)
+
+    assert [w for w in caught if issubclass(w.category, SyntaxWarning)] == []
+    by_rule_file = {(f["rule_id"], f["file"]) for f in report["findings"]}
+    assert by_rule_file == {
+        ("BILL006", "real_issues.py"),
+        ("BILL003", "real_issues.py"),
+        ("BILL012", "src/app/api/raw/route.ts"),
+    }
+
+
+def test_readme_and_skill_shell_blocks_are_zsh_safe() -> None:
+    for doc_path in (REPO_ROOT / "README.md", REPO_ROOT / "skills" / "billshock" / "SKILL.md"):
+        content = doc_path.read_text(encoding="utf-8")
+        assert "python3 skills/billshock/scripts/billshock.py" not in content
+        for match in re.finditer(r"```bash\n(.*?)```", content, flags=re.DOTALL):
+            for raw_line in match.group(1).splitlines():
+                stripped = raw_line.strip()
+                assert not stripped.startswith("#"), f"zsh-unsafe comment in {doc_path.name}: {stripped}"

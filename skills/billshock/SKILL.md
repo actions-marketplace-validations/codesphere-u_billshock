@@ -10,7 +10,7 @@ license: MIT
 compatibility: Requires Python 3.10+ (stdlib only, zero external packages) and optional git for --diff mode.
 metadata:
   author: codesphere-u
-  version: "1.0.3"
+  version: "1.0.4"
   repository: https://github.com/codesphere-u/billshock
 ---
 
@@ -29,21 +29,25 @@ Never deploy an AI-powered route, frontend effect loop, database query, or backg
 
 ### 1. Run the Deterministic Audit
 
-Execute the bundled zero-dependency scanner from this skill's directory (for example, `.agents/skills/billshock/scripts/billshock.py` or `~/.claude/skills/billshock/scripts/billshock.py`), or via `uvx`:
+Execute the bundled zero-dependency scanner from this skill's directory (for example, `~/.agents/skills/billshock/scripts/billshock.py`, `.agents/skills/billshock/scripts/billshock.py`, or `~/.claude/skills/billshock/scripts/billshock.py`), or via installed `billshock` / `uvx`:
+
+Full repository spend-safety audit (JSON for structured triage):
 
 ```bash
-# Full repository spend-safety audit (JSON for structured triage, text for readable output)
-python3 <skill-dir>/scripts/billshock.py . --format json
+python3 ~/.agents/skills/billshock/scripts/billshock.py . --format json
+```
 
-# Audit repository AND inspect git diff for removed rate/token/timeout guards
-python3 <skill-dir>/scripts/billshock.py . --diff HEAD --format text
+Audit repository AND inspect git diff for removed rate/token/timeout guards:
+
+```bash
+python3 ~/.agents/skills/billshock/scripts/billshock.py . --diff HEAD --format text
 ```
 
 For legacy codebases adopting BillShock incrementally, snapshot existing debt first and fail only on regressions:
 
 ```bash
-python3 <skill-dir>/scripts/billshock.py . --write-baseline .billshock-baseline.json
-python3 <skill-dir>/scripts/billshock.py . --diff HEAD --baseline .billshock-baseline.json --fail-on high
+python3 ~/.agents/skills/billshock/scripts/billshock.py . --write-baseline .billshock-baseline.json
+python3 ~/.agents/skills/billshock/scripts/billshock.py . --diff HEAD --baseline .billshock-baseline.json --fail-on high
 ```
 
 > Load [references/rules.md](references/rules.md) for exact rule definitions (`BILL001`–`BILL016`) and false-positive guards.
@@ -76,7 +80,7 @@ If an intentional exception genuinely applies (for example, an internal health m
 Re-run BillShock after remediation alongside the repo's real test suite:
 
 ```bash
-python3 <skill-dir>/scripts/billshock.py . --diff HEAD --fail-on high
+python3 ~/.agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high
 ```
 
 Include in your final report:

@@ -10,7 +10,7 @@
       "name": "billshock",
       "source": "./",
       "description": "Prevent overnight cloud, AI & DB bill shock with deterministic static checks.",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "author": {
         "name": "codesphere-u"
       },

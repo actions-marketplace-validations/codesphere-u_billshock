@@ -29,11 +29,21 @@
 npx skills add codesphere-u/billshock
 ```
 
-Then run directly against any repo using the installed skill script:
+Then `cd` into any project repository and run the installed skill script:
+
+If you installed globally (default in `npx skills add`):
+
+```bash
+python3 ~/.agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high --min-score 80
+```
+
+If you installed into a single project workspace:
 
 ```bash
 python3 .agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high --min-score 80
 ```
+
+> Note: BillShock intentionally refuses scanning your home directory (`~`) or `/` by default (`--allow-home` overrides if needed). Run inside a repository directory or pass a project path (for example `python3 ~/.agents/skills/billshock/scripts/billshock.py /path/to/repo`).
 
 ### 2. Install as a Claude Code Plugin
 
@@ -43,18 +53,31 @@ python3 .agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on hi
 
 ### 3. Install Global CLI (`uv` or `pip`) or Run Zero-Install (`uvx` / `curl`)
 
+Ephemeral zero-install run via `uvx`:
+
 ```bash
-# Ephemeral zero-install run via uvx
 uvx --from git+https://github.com/codesphere-u/billshock@v1 billshock . --diff HEAD
+```
 
-# Persistent global CLI via uv tool (or pip install)
+Persistent global CLI via `uv tool` (or `pip install`), then run `billshock` from anywhere:
+
+```bash
 uv tool install git+https://github.com/codesphere-u/billshock@v1
+```
+
+```bash
 pip install git+https://github.com/codesphere-u/billshock@v1
+```
 
-# One-line zero-clone runner (Python 3.10+ stdlib only)
+One-line zero-clone runner (Python 3.10+ stdlib only):
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/codesphere-u/billshock/v1/skills/billshock/scripts/billshock.py | python3 - .
+```
 
-# Emit SARIF 2.1.0 for GitHub Code Scanning
+Emit SARIF 2.1.0 for GitHub Code Scanning:
+
+```bash
 billshock . --format sarif --output billshock.sarif
 ```
 
@@ -97,7 +120,7 @@ jobs:
 ### Runaway App (`tests/fixtures/runaway_app`)
 
 ```text
-BillShock v1.0.3 — Spend-Safety & Runaway-Cost Report
+BillShock v1.0.4 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/runaway_app | Files scanned: 4 | AI calls: 2 | DB ops: 1 | HTTP: 5 | Crons: 1
 Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 
@@ -119,7 +142,7 @@ Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 ### Hardened App (`tests/fixtures/clean_app`)
 
 ```text
-BillShock v1.0.3 — Spend-Safety & Runaway-Cost Report
+BillShock v1.0.4 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/clean_app | Files scanned: 3 | AI calls: 1 | DB ops: 1 | HTTP: 3 | Crons: 2
 Score:  100/100 (SAFE)  [critical=0 high=0 medium=0 low=0]
 
@@ -156,8 +179,8 @@ Full rule specifications live in [`skills/billshock/references/rules.md`](skills
 - **Inline suppressions**: Add `// billshock-ignore: BILL010` or `# billshock-ignore: BILL013` on the finding line or immediately preceding line.
 - **Baselines** (adopt cleanly on legacy repos without blocking unrelated fixes):
   ```bash
-  python3 skills/billshock/scripts/billshock.py . --write-baseline .billshock-baseline.json
-  python3 skills/billshock/scripts/billshock.py . --baseline .billshock-baseline.json --fail-on high
+  python3 ~/.agents/skills/billshock/scripts/billshock.py . --write-baseline .billshock-baseline.json
+  python3 ~/.agents/skills/billshock/scripts/billshock.py . --baseline .billshock-baseline.json --fail-on high
   ```
 
 ---

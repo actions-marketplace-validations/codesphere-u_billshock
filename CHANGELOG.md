@@ -5,6 +5,16 @@ All notable changes to **BillShock** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-11-14
+
+### Fixed
+- **macOS Zsh Copy-Paste Safety & Global Skill Paths**: Remove `#` comments from shell code blocks in `README.md` and `SKILL.md` so pasting multi-line blocks in macOS `zsh` (`INTERACTIVE_COMMENTS` off by default) never triggers `zsh: command not found: #`. Document `~/.agents/skills/billshock/scripts/billshock.py` (global `npx skills add` default) alongside `.agents/skills/billshock/scripts/billshock.py` and global `billshock` CLI installation.
+- **Broad Root Guard (`--allow-home`) & Hidden Directory Filtering**: Refuse accidentally scanning `$HOME` (`~`) or `/` unless `--allow-home` is specified, skip dot-directories (`.local`, `.vscode`, `.config`, `.cache`, etc.) plus `site-packages`, `dist-packages`, `Library`, and `AppData` during directory walks while keeping `.github/workflows` infra checks active, and silence Python `SyntaxWarning` noise when AST-parsing legacy files.
+- **Zero Real-World False Positives Across `BILL003`/`BILL004`/`BILL006`/`BILL007`/`BILL009`/`BILL012`**:
+  - Require exact separator boundaries in Python paid/AI/DB call checks (`generate_contents`, `generate_content_config_dict.items`, and `self._interceptor.pre_generate_content` no longer trigger `BILL003`/`BILL004`).
+  - Tighten Python DB receiver matching so `dict.get()`, `connection.get()`, `all_queues_in_db_dict.get()`, `self._continuous_sessions.get()`, and `while True: q.get()` no longer trigger `BILL006` or `BILL009`.
+  - Exempt Next.js `@supabase/ssr` / `@supabase/supabase-js` HTTP `createClient()` calls from `BILL012` while still catching unpooled `new PrismaClient()`, `new Pool()`, and `redis`/`libsql` `createClient({ ... })`, and recognize Supabase `head` / `count` queries plus longer `.eq().order().limit()` chains for `BILL007`.
+
 ## [1.0.3] - 2026-11-14
 
 ### Improved

@@ -1,6 +1,6 @@
 {
   "name": "billshock",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "icon": "./.claude-plugin/icon.png",
   "description": "Deterministic Spend-Safety & Runaway-Cost auditor exposing infinite useEffect loops, uncapped AI token bombs, N+1 DB scans, connection pool leaks, and aggressive crons.",
   "author": {
