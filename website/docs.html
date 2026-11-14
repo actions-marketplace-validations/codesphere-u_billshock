@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation | BillShock Spend-Safety &amp; Runaway-Cost Auditor</title>
+    <meta
+      name="description"
+      content="Complete documentation for BillShock v1.1.0: skills.sh install, CLI flags, 6 Spend-Safety Pillars, GitHub Action SARIF, baselines, and remediation recipes."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#fffdf2" />
+    <link rel="canonical" href="https://codesphere-u.github.io/billshock/docs.html" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=1.1.0" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Documentation | BillShock" />
+    <meta property="og:description" content="Install, CLI reference, 6 Spend-Safety Pillars, git diff gates, baselines, and copy-paste remediation patterns." />
+    <meta property="og:image" content="https://codesphere-u.github.io/billshock/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      [hidden] { display: none !important; }
+      .brand-wordmark-svg { height: 36px; width: 196px; display: block; }
+    </style>
+    <link rel="stylesheet" href="./styles.css?v=1.1.0" />
+  </head>
+  <body data-analytics="plausible">
+    <div class="page-col page-col-docs">
+      <header class="site-header">
+        <a class="brand-link" href="./" aria-label="BillShock home">
+          <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 218 40" fill="none" role="img" aria-label="billshock">
+            <path d="M16 5L28 10.5V20C28 27.6 22.8 33 16 35.5C9.2 33 4 27.6 4 20V10.5L16 5Z" fill="#8ce071" stroke="#172b1e" stroke-width="2.6" stroke-linejoin="round" />
+            <path d="M17.5 11.5L11 20.5H16.2L14.6 28.5L21 19.5H15.8L17.5 11.5Z" fill="#fde047" stroke="#172b1e" stroke-width="1.8" stroke-linejoin="round" />
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="none" stroke="#172b1e" stroke-width="4" stroke-linejoin="round">billshock</text>
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="#8ce071">billshock</text>
+          </svg>
+        </a>
+
+        <nav class="header-nav" aria-label="Primary navigation">
+          <a href="./studio.html">studio</a>
+          <a href="./proof.html">proof</a>
+          <a class="active" href="./docs.html">docs</a>
+          <a href="./rules.html">rules</a>
+          <a class="icon-link" href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+            </svg>
+          </a>
+          <a class="nav-pill" href="https://github.com/codesphere-u/billshock/releases" target="_blank" rel="noopener noreferrer">v1.1.0</a>
+        </nav>
+      </header>
+
+      <div class="docs-layout">
+        <aside class="docs-sidebar" aria-label="Documentation chapters">
+          <ul class="docs-rail">
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link active" data-doc="quickstart">Quick Start</button>
+              <ul class="doc-subrail open" data-subrail="quickstart">
+                <li><a class="doc-sub-link active" href="#qs-install">Install Skill or CLI</a></li>
+                <li><a class="doc-sub-link" href="#qs-first-scan">First Repository Scan</a></li>
+              </ul>
+            </li>
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link" data-doc="cli">CLI Flags &amp; Exit Codes</button>
+              <ul class="doc-subrail" data-subrail="cli">
+                <li><a class="doc-sub-link" href="#cli-flags">Flag Reference</a></li>
+                <li><a class="doc-sub-link" href="#cli-exits">Exit Codes</a></li>
+              </ul>
+            </li>
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link" data-doc="pillars">6 Spend-Safety Pillars</button>
+              <ul class="doc-subrail" data-subrail="pillars">
+                <li><a class="doc-sub-link" href="#pil-overview">Rules Matrix</a></li>
+                <li><a class="doc-sub-link" href="#pil-scoring">Score Calculation</a></li>
+              </ul>
+            </li>
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link" data-doc="remediation">Remediation Playbook</button>
+              <ul class="doc-subrail" data-subrail="remediation">
+                <li><a class="doc-sub-link" href="#rem-ai">Uncapped LLM Routes</a></li>
+                <li><a class="doc-sub-link" href="#rem-db">Prisma &amp; Python</a></li>
+              </ul>
+            </li>
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link" data-doc="baselines">Git Diff &amp; Baselines</button>
+              <ul class="doc-subrail" data-subrail="baselines">
+                <li><a class="doc-sub-link" href="#bas-diff">PR Regression Mode</a></li>
+                <li><a class="doc-sub-link" href="#bas-snap">Baseline Adoption</a></li>
+              </ul>
+            </li>
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link" data-doc="config">Configuration &amp; Ignores</button>
+              <ul class="doc-subrail" data-subrail="config">
+                <li><a class="doc-sub-link" href="#cfg-json">.billshock.json</a></li>
+                <li><a class="doc-sub-link" href="#cfg-inline">Inline Suppressions</a></li>
+              </ul>
+            </li>
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link" data-doc="action">GitHub Action &amp; SARIF</button>
+              <ul class="doc-subrail" data-subrail="action">
+                <li><a class="doc-sub-link" href="#act-workflow">Workflow YAML</a></li>
+                <li><a class="doc-sub-link" href="#act-outputs">Action Outputs</a></li>
+              </ul>
+            </li>
+            <li class="doc-nav-item">
+              <button type="button" class="doc-nav-link" data-doc="plugin">Claude Plugin &amp; Agent Skill</button>
+              <ul class="doc-subrail" data-subrail="plugin">
+                <li><a class="doc-sub-link" href="#plg-install">Agent &amp; IDE Install</a></li>
+              </ul>
+            </li>
+          </ul>
+        </aside>
+
+        <main class="doc-content">
+          <div class="docs-mobile-nav" aria-label="Choose chapter">
+            <button type="button" class="docs-mobile-chip active" data-doc="quickstart">Quick Start</button>
+            <button type="button" class="docs-mobile-chip" data-doc="cli">CLI Flags</button>
+            <button type="button" class="docs-mobile-chip" data-doc="pillars">6 Pillars</button>
+            <button type="button" class="docs-mobile-chip" data-doc="remediation">Remediation</button>
+            <button type="button" class="docs-mobile-chip" data-doc="baselines">Diff &amp; Baselines</button>
+            <button type="button" class="docs-mobile-chip" data-doc="config">Config</button>
+            <button type="button" class="docs-mobile-chip" data-doc="action">GitHub Action</button>
+            <button type="button" class="docs-mobile-chip" data-doc="plugin">Agent Plugin</button>
+          </div>
+
+          <!-- Chapter 1 -->
+          <article class="doc-chapter" id="doc-quickstart">
+            <h1>Quick Start</h1>
+            <p>Install BillShock once as an AI Agent Skill, Claude Code plugin, or zero-install <code>uvx</code> CLI, then audit any JS/TS/React/Next.js/Python repo before deploying.</p>
+
+            <h2 id="qs-install">Install Skill or CLI</h2>
+            <p>Recommended for Antigravity, Cursor, Codex, and Claude Code via <code>skills.sh</code>:</p>
+            <div class="doc-codeblock">
+              <pre><span class="syn-cmd">npx</span> skills add codesphere-u/billshock</pre>
+              <button type="button" class="copy-icon-btn" data-copy="npx skills add codesphere-u/billshock" aria-label="Copy command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+
+            <p>Or install the global CLI with <code>uv</code> or <code>pip</code>:</p>
+            <div class="doc-codeblock">
+              <pre><span class="syn-cmd">uv</span> tool install git+https://github.com/codesphere-u/billshock@v1</pre>
+              <button type="button" class="copy-icon-btn" data-copy="uv tool install git+https://github.com/codesphere-u/billshock@v1" aria-label="Copy command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+
+            <h2 id="qs-first-scan">First Repository Scan</h2>
+            <p>Inside your repository, run BillShock with diff checks enabled and strict score gating:</p>
+            <div class="doc-codeblock">
+              <pre><span class="syn-cmd">python3</span> ~/.agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high --min-score 80</pre>
+              <button type="button" class="copy-icon-btn" data-copy="python3 ~/.agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high --min-score 80" aria-label="Copy command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+            <p>Note: BillShock intentionally refuses scanning your home directory (<code>~</code>) or <code>/</code> unless <code>--allow-home</code> is explicitly passed.</p>
+          </article>
+
+          <!-- Chapter 2 -->
+          <article class="doc-chapter" id="doc-cli" hidden>
+            <h1>CLI Flags &amp; Exit Codes</h1>
+            <p>Every flag works identically whether invoked via installed <code>billshock</code> or standalone <code>python3 billshock.py</code>.</p>
+
+            <h2 id="cli-flags">Flag Reference</h2>
+            <div class="doc-table-wrap">
+              <table class="doc-table">
+                <thead><tr><th>Flag</th><th>Default</th><th>Behavior</th></tr></thead>
+                <tbody>
+                  <tr><td><code>--format</code></td><td><code>text</code></td><td>Emit <code>text</code>, <code>markdown</code>, <code>json</code>, or <code>sarif</code> (SARIF 2.1.0).</td></tr>
+                  <tr><td><code>--diff [REF]</code></td><td><code>HEAD</code></td><td>Inspect git diff against REF (<code>BILL015</code> / <code>BILL016</code>).</td></tr>
+                  <tr><td><code>--staged</code></td><td><code>false</code></td><td>Inspect staged index diff before commit.</td></tr>
+                  <tr><td><code>--fail-on</code></td><td><code>high</code></td><td>Minimum failing severity: <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code>, <code>any</code>, <code>none</code>.</td></tr>
+                  <tr><td><code>--min-score</code></td><td>unset</td><td>Fail if Spend-Safety Score (0–100) falls below threshold.</td></tr>
+                  <tr><td><code>--write-baseline</code></td><td>unset</td><td>Save fingerprint snapshot JSON for incremental adoption.</td></tr>
+                  <tr><td><code>--baseline</code></td><td>unset</td><td>Suppress pre-existing findings matching saved fingerprints.</td></tr>
+                  <tr><td><code>--allow-home</code></td><td><code>false</code></td><td>Override broad-root safety check when intentionally auditing <code>~</code>.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2 id="cli-exits">Exit Codes</h2>
+            <ul>
+              <li><code>0</code> — Scan passed `--fail-on` and `--min-score` thresholds (or `--write-baseline` saved cleanly).</li>
+              <li><code>1</code> — One or more findings met `--fail-on` severity or score fell below `--min-score`.</li>
+              <li><code>2</code> — Invalid CLI arguments, missing target directory, or unsafe broad-root invocation (`~` / `/`).</li>
+            </ul>
+          </article>
+
+          <!-- Chapter 3 -->
+          <article class="doc-chapter" id="doc-pillars" hidden>
+            <h1>6 Spend-Safety Pillars</h1>
+            <p>Every rule in `BILL001`–`BILL016` maps to one of six concrete runaway-cost failure classes.</p>
+
+            <h2 id="pil-overview">Rules Matrix</h2>
+            <div class="doc-table-wrap">
+              <table class="doc-table">
+                <thead><tr><th>Pillar</th><th>Rules</th><th>What Is Audited</th></tr></thead>
+                <tbody>
+                  <tr><td><code>EFFECT_LOOP</code></td><td><code>BILL001</code>–<code>BILL002</code></td><td>Dependency-free React <code>useEffect</code> network loops; sub-1s polling timers.</td></tr>
+                  <tr><td><code>AI_BOMB</code></td><td><code>BILL003</code>–<code>BILL005</code></td><td>Missing <code>max_tokens</code>; paid SDKs in loops; unauthenticated/unthrottled routes.</td></tr>
+                  <tr><td><code>DB_EGRESS</code></td><td><code>BILL006</code>–<code>BILL008</code></td><td>N+1 loop queries; unpaginated <code>findMany</code>/<code>select</code> scans; uncapped <code>Promise.all(map)</code>.</td></tr>
+                  <tr><td><code>RETRY_HANG</code></td><td><code>BILL009</code>–<code>BILL011</code></td><td>Unbounded <code>while True</code> loops; timeout-free HTTP; long <code>maxDuration</code>.</td></tr>
+                  <tr><td><code>LEAK_POOL</code></td><td><code>BILL012</code>–<code>BILL013</code></td><td>Per-request DB clients/engines; unbounded module-level caches.</td></tr>
+                  <tr><td><code>INFRA_CRON &amp; DIFF</code></td><td><code>BILL014</code>–<code>BILL016</code></td><td>Sub-5m crons; PR diffs removing rate/token/timeout/limit guards.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2 id="pil-scoring">Score Calculation</h2>
+            <p>Each unique finding deducts from `100` (`CRITICAL -18`, `HIGH -9`, `MEDIUM -4`, `LOW -1`). Any critical finding caps grade below `SAFE` (`90–100 SAFE`, `70–89 CAUTION`, `&lt;70 BILL SHOCK ALERT`).</p>
+          </article>
+
+          <!-- Chapter 4 -->
+          <article class="doc-chapter" id="doc-remediation" hidden>
+            <h1>Remediation Playbook</h1>
+            <p>Fix cost leaks at the source with drop-in rate limiters, token ceilings, singletons, and pagination instead of adding inline suppressions.</p>
+
+            <h2 id="rem-ai">Uncapped LLM Routes</h2>
+            <p>Pair Upstash Ratelimit, explicit <code>max_tokens</code>, and <code>AbortSignal.timeout()</code> in Next.js App Router handlers:</p>
+            <div class="doc-codeblock">
+              <pre>const { success } = await ratelimit.limit(ip);
+if (!success) return Response.json({ error: "Too many requests" }, { status: 429 });
+
+const completion = await openai.chat.completions.create(
+  { model: "gpt-4o-mini", max_tokens: 512, messages },
+  { signal: AbortSignal.timeout(15_000) }
+);</pre>
+              <button type="button" class="copy-icon-btn" data-copy="const { success } = await ratelimit.limit(ip); if (!success) return Response.json({ error: 'Too many requests' }, { status: 429 });" aria-label="Copy snippet">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+
+            <h2 id="rem-db">Prisma &amp; Python</h2>
+            <ul>
+              <li>Attach PrismaClient to <code>globalThis</code> in serverless apps (<code>BILL012</code>) and pass explicit <code>take: 50</code> / cursor pagination (<code>BILL007</code>).</li>
+              <li>Decorate Python caches with <code>@lru_cache(maxsize=256)</code> (<code>BILL013</code>) and always set <code>timeout=5.0</code> on <code>httpx</code> / <code>requests</code> calls (<code>BILL010</code>).</li>
+            </ul>
+          </article>
+
+          <!-- Chapter 5 -->
+          <article class="doc-chapter" id="doc-baselines" hidden>
+            <h1>Git Diff &amp; Baselines</h1>
+            <p>Catch silent regressions even in repositories with legacy tech debt.</p>
+
+            <h2 id="bas-diff">PR Regression Mode</h2>
+            <div class="doc-codeblock">
+              <pre><span class="syn-cmd">billshock</span> . --diff origin/main --fail-on high</pre>
+              <button type="button" class="copy-icon-btn" data-copy="billshock . --diff origin/main --fail-on high" aria-label="Copy command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+
+            <h2 id="bas-snap">Baseline Adoption</h2>
+            <div class="doc-codeblock">
+              <pre><span class="syn-cmd">billshock</span> . --write-baseline .billshock-baseline.json
+<span class="syn-cmd">billshock</span> . --baseline .billshock-baseline.json --fail-on high</pre>
+              <button type="button" class="copy-icon-btn" data-copy="billshock . --write-baseline .billshock-baseline.json" aria-label="Copy command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+          </article>
+
+          <!-- Chapter 6 -->
+          <article class="doc-chapter" id="doc-config" hidden>
+            <h1>Configuration &amp; Ignores</h1>
+            <p>Exclude generated artifacts cleanly via <code>.billshockignore</code> or <code>.billshock.json</code>.</p>
+
+            <h2 id="cfg-json">.billshock.json</h2>
+            <div class="doc-codeblock">
+              <pre>{
+  "exclude": ["legacy/**"],
+  "ignoreRules": ["BILL010"]
+}</pre>
+              <button type="button" class="copy-icon-btn" data-copy='{ "exclude": ["legacy/**"], "ignoreRules": ["BILL010"] }' aria-label="Copy JSON">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+
+            <h2 id="cfg-inline">Inline Suppressions</h2>
+            <p>Attach rule-scoped suppressions only when an out-of-band deadline applies:</p>
+            <div class="doc-codeblock">
+              <pre>// billshock-ignore: BILL010 - unix socket deadline set at transport layer</pre>
+              <button type="button" class="copy-icon-btn" data-copy="// billshock-ignore: BILL010 - unix socket deadline set at transport layer" aria-label="Copy comment">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+          </article>
+
+          <!-- Chapter 7 -->
+          <article class="doc-chapter" id="doc-action" hidden>
+            <h1>GitHub Action &amp; SARIF</h1>
+            <p>Drop <code>codesphere-u/billshock@v1</code> into any pull-request workflow with <code>fetch-depth: 0</code> so diff checks and SARIF Code Scanning run automatically.</p>
+
+            <h2 id="act-workflow">Workflow YAML</h2>
+            <div class="doc-codeblock">
+              <pre>- uses: codesphere-u/billshock@v1
+  with:
+    path: .
+    diff: origin/${{ github.base_ref }}
+    fail-on: high
+    min-score: "80"
+    sarif-file: billshock.sarif</pre>
+              <button type="button" class="copy-icon-btn" data-copy="uses: codesphere-u/billshock@v1" aria-label="Copy workflow">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+
+            <h2 id="act-outputs">Action Outputs</h2>
+            <p>Outputs exposed by <code>action.yml</code>: <code>score</code> (0–100), <code>grade</code> (<code>SAFE</code>, <code>CAUTION</code>, <code>BILL SHOCK ALERT</code>), <code>critical-count</code>, and <code>sarif-file</code>.</p>
+          </article>
+
+          <!-- Chapter 8 -->
+          <article class="doc-chapter" id="doc-plugin" hidden>
+            <h1>Claude Plugin &amp; Agent Skill</h1>
+            <p>Teach coding agents to run BillShock automatically before every deployment or PR.</p>
+
+            <h2 id="plg-install">Agent &amp; IDE Install</h2>
+            <div class="doc-codeblock">
+              <pre><span class="syn-cmd">/plugin</span> install billshock --marketplace codesphere-u/billshock</pre>
+              <button type="button" class="copy-icon-btn" data-copy="/plugin install billshock --marketplace codesphere-u/billshock" aria-label="Copy plugin command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+              </button>
+            </div>
+            <p>See full agent workflow instructions in <a class="inline-link" href="./studio.html">Interactive Studio</a> or <a class="inline-link" href="./rules.html">Rules Catalog</a>.</p>
+          </article>
+
+          <nav class="doc-pagination" aria-label="Chapter pagination">
+            <button type="button" class="page-step-btn prev" id="doc-prev-btn" hidden>
+              <small>Previous</small>
+              <strong id="doc-prev-title"></strong>
+            </button>
+            <button type="button" class="page-step-btn next" id="doc-next-btn">
+              <small>Next</small>
+              <strong id="doc-next-title">CLI Flags &amp; Exit Codes</strong>
+            </button>
+          </nav>
+        </main>
+      </div>
+
+      <footer class="site-footer">
+        <div class="footer-links">
+          <a href="./">home</a> ·
+          <a href="./studio.html">studio</a> ·
+          <a href="./proof.html">proof</a> ·
+          <a href="./docs.html">docs</a> ·
+          <a href="./rules.html">rules</a> ·
+          <a href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer">github</a>
+        </div>
+        <div>MIT License · BillShock v1.1.0 · Privacy-first Plausible analytics hook</div>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+    <script src="./app.js?v=1.1.0"></script>
+  </body>
+</html>

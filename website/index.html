@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BillShock — Deterministic Runaway-Cost &amp; Spend-Safety Auditor</title>
+    <meta
+      name="description"
+      content="Catch infinite React useEffect storms, uncapped AI token bombs, N+1 DB egress, hung retries, and aggressive crons before they ship."
+    />
+    <meta
+      name="keywords"
+      content="BillShock, FinOps static analysis, AI agent spend safety, React useEffect loop detector, max_tokens audit, Prisma N+1 scanner, SARIF CI gate"
+    />
+    <meta name="author" content="codesphere-u" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#fffdf2" />
+    <link rel="canonical" href="https://codesphere-u.github.io/billshock/" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=1.1.0" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://codesphere-u.github.io/billshock/" />
+    <meta property="og:site_name" content="BillShock" />
+    <meta property="og:title" content="BillShock — Deterministic Runaway-Cost &amp; Spend-Safety Auditor" />
+    <meta
+      property="og:description"
+      content="16 deterministic BILL001–BILL016 checks, zero runtime dependencies, git diff guardrail detection, and SARIF 2.1.0 CI gating."
+    />
+    <meta property="og:image" content="https://codesphere-u.github.io/billshock/og-image.svg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="BillShock spend-shield green and volt-gold social card showing 100/100 SAFE Gate" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="BillShock — Deterministic Runaway-Cost &amp; Spend-Safety Auditor" />
+    <meta
+      name="twitter:description"
+      content="Catch $10k cloud &amp; LLM bugs on localhost: 16 BILL rules, zero dependencies, GitHub Action &amp; SARIF CI gate."
+    />
+    <meta name="twitter:image" content="https://codesphere-u.github.io/billshock/og-image.svg" />
+
+    <style>
+      [hidden] { display: none !important; }
+      .brand-wordmark-svg { height: 36px; width: 196px; display: block; }
+    </style>
+    <link rel="stylesheet" href="./styles.css?v=1.1.0" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://codesphere-u.github.io/billshock/#org",
+            "name": "BillShock",
+            "url": "https://codesphere-u.github.io/billshock/",
+            "founder": {
+              "@type": "Person",
+              "name": "Akandwanaho Ivan Alvin",
+              "url": "https://alvin.codesphereug.com/"
+            },
+            "sameAs": [
+              "https://github.com/codesphere-u/billshock"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://codesphere-u.github.io/billshock/#website",
+            "url": "https://codesphere-u.github.io/billshock/",
+            "name": "BillShock",
+            "publisher": {
+              "@id": "https://codesphere-u.github.io/billshock/#org"
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://codesphere-u.github.io/billshock/#software",
+            "name": "BillShock",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "macOS, Linux, Windows",
+            "softwareVersion": "1.1.0",
+            "license": "https://opensource.org/licenses/MIT",
+            "url": "https://codesphere-u.github.io/billshock/",
+            "downloadUrl": "https://github.com/codesphere-u/billshock/releases/tag/v1.1.0",
+            "description": "Deterministic Agent Skill, CLI and GitHub Action auditing JavaScript, TypeScript, React, Next.js, Python and workflow schedules for infinite loops, uncapped LLM tokens, N+1 DB egress and cost guardrail regressions.",
+            "publisher": {
+              "@id": "https://codesphere-u.github.io/billshock/#org"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What codebases does BillShock scan?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "BillShock audits JavaScript, TypeScript, JSX, TSX, Vue, Svelte, Python (AST + FastAPI/SQLAlchemy/Django), vercel.json functions and crons, plus GitHub Actions scheduled workflows using pure Python 3.10+ stdlib."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How does BillShock stop pull requests from removing safety guardrails?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Passing --diff HEAD or --staged activates BILL015 and BILL016, which inspect git diffs per file and fail CI when rate limits, max_tokens caps, query LIMITs, or HTTP timeouts are removed without replacement, or when sub-5-minute crons are added."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can teams adopt BillShock gradually on existing repositories?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Run --write-baseline .billshock-baseline.json once to fingerprint existing debt, then run --baseline .billshock-baseline.json --fail-on high in CI so only newly introduced regressions block merges."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body data-analytics="plausible">
+    <div class="page-col">
+      <header class="site-header">
+        <a class="brand-link" href="./" aria-label="BillShock home">
+          <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 218 40" fill="none" role="img" aria-label="billshock">
+            <path d="M16 5L28 10.5V20C28 27.6 22.8 33 16 35.5C9.2 33 4 27.6 4 20V10.5L16 5Z" fill="#8ce071" stroke="#172b1e" stroke-width="2.6" stroke-linejoin="round" />
+            <path d="M17.5 11.5L11 20.5H16.2L14.6 28.5L21 19.5H15.8L17.5 11.5Z" fill="#fde047" stroke="#172b1e" stroke-width="1.8" stroke-linejoin="round" />
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="none" stroke="#172b1e" stroke-width="4" stroke-linejoin="round">billshock</text>
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="#8ce071">billshock</text>
+          </svg>
+        </a>
+
+        <nav class="header-nav" aria-label="Primary navigation">
+          <a href="./studio.html">studio</a>
+          <a href="./proof.html">proof</a>
+          <a href="./docs.html">docs</a>
+          <a href="./rules.html">rules</a>
+          <a
+            class="icon-link"
+            href="https://github.com/codesphere-u/billshock"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="BillShock on GitHub"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+              />
+            </svg>
+          </a>
+          <a
+            class="nav-pill"
+            href="https://github.com/codesphere-u/billshock/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            v1.1.0
+          </a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero-duo" aria-labelledby="hero-title">
+          <div class="mascot-wrap">
+            <!-- Original BillShock Spend-Breaker Wattmeter Shield Mascot in Spring Green & Volt Gold -->
+            <svg
+              width="136"
+              height="136"
+              viewBox="0 0 136 136"
+              fill="none"
+              role="img"
+              aria-label="BillShock spend-breaker shield mascot"
+            >
+              <!-- Breaker Toggle Cap -->
+              <rect x="54" y="8" width="28" height="14" rx="6" fill="#fde047" stroke="#172b1e" stroke-width="3.2" />
+              <line x1="68" y1="22" x2="68" y2="28" stroke="#172b1e" stroke-width="3.5" stroke-linecap="round" />
+              <!-- Side Busbar Lugs -->
+              <rect x="14" y="54" width="12" height="24" rx="5" fill="#fde047" stroke="#172b1e" stroke-width="3.2" />
+              <rect x="110" y="54" width="12" height="24" rx="5" fill="#fde047" stroke="#172b1e" stroke-width="3.2" />
+              <!-- Shield Wattmeter Body -->
+              <path
+                d="M68 25L108 42V74C108 98 91 114 68 122C45 114 28 98 28 74V42L68 25Z"
+                fill="#8ce071"
+                stroke="#172b1e"
+                stroke-width="3.8"
+                stroke-linejoin="round"
+              />
+              <!-- Warm Ivory Meter Faceplate -->
+              <rect x="40" y="48" width="56" height="44" rx="11" fill="#fffdf2" stroke="#172b1e" stroke-width="3" />
+              <!-- Volt Eyes + Bounded Gauge Needle -->
+              <circle cx="54" cy="64" r="5" fill="#fde047" stroke="#172b1e" stroke-width="2.4" />
+              <circle cx="82" cy="64" r="5" fill="#fde047" stroke="#172b1e" stroke-width="2.4" />
+              <circle cx="54" cy="64" r="1.7" fill="#172b1e" />
+              <circle cx="82" cy="64" r="1.7" fill="#172b1e" />
+              <!-- Shield Lightning Bolt / Safe Smile -->
+              <path d="M51 79H59L64 73L70 84L75 79H85" stroke="#166534" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+              <!-- Grounded Insulator Feet -->
+              <ellipse cx="51" cy="126" rx="10" ry="4.5" fill="#172b1e" />
+              <ellipse cx="85" cy="126" rx="10" ry="4.5" fill="#172b1e" />
+            </svg>
+          </div>
+
+          <div class="hero-copy">
+            <h1 id="hero-title">catch \$10k cloud bills on localhost</h1>
+            <p class="hero-sub">the zero-dependency agent skill, CLI &amp; CI spend-safety gate</p>
+          </div>
+        </section>
+
+        <section class="cta-area" aria-label="Install BillShock">
+          <div class="split-btn-group">
+            <button type="button" class="split-main" id="cta-main-btn">
+              <strong>install billshock</strong>
+              <span id="cta-sub-label">npx skills · uvx · claude plugin · github action · v1.1.0</span>
+            </button>
+            <button type="button" class="split-caret" id="cta-caret-btn" aria-label="Switch install method" aria-expanded="false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="cmd-caption" id="hero-cmd-caption">npx skills add codesphere-u/billshock</div>
+
+          <div class="cta-popover" id="cta-popover" role="dialog" aria-label="Choose BillShock install target">
+            <div class="pop-tabs" role="tablist">
+              <button type="button" class="pop-tab active" data-cmd="npx skills add codesphere-u/billshock" data-label="skills.sh">skills.sh</button>
+              <button type="button" class="pop-tab" data-cmd="uvx --from git+https://github.com/codesphere-u/billshock@v1 billshock . --diff HEAD" data-label="uvx CLI">uvx CLI</button>
+              <button type="button" class="pop-tab" data-cmd="/plugin install billshock --marketplace codesphere-u/billshock" data-label="Claude Plugin">Claude Plugin</button>
+              <button type="button" class="pop-tab" data-cmd="uses: codesphere-u/billshock@v1" data-label="GitHub Action">Action</button>
+            </div>
+            <div class="pop-cmd">
+              <code id="popover-cmd-text">npx skills add codesphere-u/billshock</code>
+              <button type="button" class="copy-icon-btn" id="popover-copy-btn" aria-label="Copy install command">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="preview-frame" aria-label="Live BillShock scan preview">
+          <div class="frame-bar">
+            <div class="dots" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div class="frame-tabs" role="tablist">
+              <button type="button" class="frame-tab active" data-preview="runaway" aria-selected="true">Runaway App (0/100)</button>
+              <button type="button" class="frame-tab" data-preview="clean" aria-selected="false">Hardened (100/100)</button>
+              <button type="button" class="frame-tab" data-preview="diff" aria-selected="false">Diff Gate (BILL015)</button>
+            </div>
+            <a class="frame-open-link" href="./studio.html">open studio -&gt;</a>
+          </div>
+          <div class="preview-body">
+            <pre class="code-block" id="home-preview-pre">$ python3 ~/.agents/skills/billshock/scripts/billshock.py tests/fixtures/runaway_app --no-color
+
+BillShock v1.1.0 — Spend-Safety &amp; Runaway-Cost Report
+Target: tests/fixtures/runaway_app | Files scanned: 4 | AI calls: 2 | DB ops: 1 | HTTP: 5 | Crons: 1
+Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
+
+[CRITICAL] BILL004 backend/jobs.py:20 — Paid SDK call `openai.chat.completions.create` inside loop.
+[CRITICAL] BILL005 src/app/api/generate/route.ts:25 — Unauthenticated paid AI endpoint.
+[CRITICAL] BILL001 src/components/AutoChat.tsx:7 — useEffect fetch loop omits dependency array.
+[HIGH    ] BILL007 src/app/api/export/route.ts:15 — Unbounded prisma.order.findMany() scan.
+[MEDIUM  ] BILL014 vercel.json:5 — Sub-5-minute cron schedule `* * * * *` runs continuously.</pre>
+          </div>
+          <div class="preview-foot">
+            <span>16 BILL rules · zero runtime deps · JS/TS/React/Python/Vercel/Actions</span>
+            <div class="preview-foot-links">
+              <a href="./studio.html">Try Live Scanner</a>
+              <a href="./docs.html">Read docs</a>
+            </div>
+          </div>
+        </section>
+
+        <hr class="hairline" />
+
+        <section class="editorial-grid" aria-label="Core cost-safety pillars">
+          <div>
+            <h2>Stop React Effect Storms</h2>
+            <p>Catch <code>useEffect(() =&gt; fetch(...))</code> hooks missing dependency arrays (<code>BILL001</code>) and sub-1s polling timers (<code>BILL002</code>) before one browser tab opens a flood.</p>
+          </div>
+          <div>
+            <h2>Cap Unbounded AI Token Bombs</h2>
+            <p>Verify every OpenAI, Anthropic, Gemini, and Vercel AI SDK call sets <code>max_tokens</code> (<code>BILL003</code>), never loops unthrottled (<code>BILL004</code>), and enforces auth + rate limits (<code>BILL005</code>).</p>
+          </div>
+          <div>
+            <h2>Prevent N+1 DB Egress Spikes</h2>
+            <p>Expose per-item Prisma/SQLAlchemy/Supabase queries inside loops (<code>BILL006</code>), unpaginated <code>findMany()</code> handlers (<code>BILL007</code>), and uncapped <code>Promise.all</code> fan-outs (<code>BILL008</code>).</p>
+          </div>
+          <div>
+            <h2>Block PR Guardrail Removals</h2>
+            <p>Inspect <code>--diff HEAD</code> and <code>--staged</code> changes for stripped rate limits, timeouts, or token caps (<code>BILL015</code>) and newly committed every-minute crons (<code>BILL016</code>).</p>
+          </div>
+        </section>
+
+        <hr class="hairline" />
+
+        <section class="ecosystem-section" aria-label="Supported runtimes and platforms">
+          <h2>Works across every stack &amp; CI runner</h2>
+          <p class="ecosystem-sub">Pure Python 3.10+ stdlib scanner tested across Next.js App Router, React, FastAPI, Django, Prisma, Supabase, Vercel, and GitHub Code Scanning SARIF.</p>
+          <div class="eco-badges">
+            <div class="eco-item">
+              <div class="eco-circle">TS/JS</div>
+              <span>Next.js &amp; React</span>
+            </div>
+            <div class="eco-item">
+              <div class="eco-circle">PY</div>
+              <span>FastAPI &amp; Django</span>
+            </div>
+            <div class="eco-item">
+              <div class="eco-circle">AI</div>
+              <span>OpenAI &amp; AI SDK</span>
+            </div>
+            <div class="eco-item">
+              <div class="eco-circle">DB</div>
+              <span>Prisma &amp; Supabase</span>
+            </div>
+            <div class="eco-item">
+              <div class="eco-circle">CI</div>
+              <span>GitHub SARIF 2.1.0</span>
+            </div>
+          </div>
+          <p class="inline-cta-links">
+            <a href="./studio.html">Open interactive studio</a> · <a href="./proof.html">See before/after benchmarks</a> · <a href="./rules.html">Browse all 16 rules</a>
+          </p>
+        </section>
+
+        <hr class="hairline" />
+
+        <section aria-labelledby="faq-heading">
+          <h2 class="sec-title" id="faq-heading">Frequently asked questions</h2>
+          <p class="sec-sub">Clear answers on determinism, false-positive guards, baselines, and CI setup.</p>
+          <div class="faq-stack">
+            <details class="faq-item" open>
+              <summary>Does BillShock require any API keys or third-party packages at runtime?</summary>
+              <p>No. The core auditor in <code>skills/billshock/scripts/billshock.py</code> runs strictly on Python 3.10+ standard library modules with zero network calls and zero external dependencies.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Why won't safe Supabase SSR clients or Django Paginator trigger false positives?</summary>
+              <p>BillShock models framework-safe patterns: JSX apostrophe recovery, Supabase SSR <code>createClient()</code>, <code>Paginator</code> / <code>.count()</code>, Python <code>dict.get()</code> / <code>queue.get()</code>, and <code>AbortSignal.timeout()</code> are recognized natively.</p>
+            </details>
+            <details class="faq-item">
+              <summary>How do legacy repositories adopt BillShock without blocking unrelated PRs?</summary>
+              <p>Generate a fingerprint snapshot once via <code>--write-baseline .billshock-baseline.json</code>, then gate CI using <code>--baseline .billshock-baseline.json --diff HEAD --fail-on high</code>.</p>
+            </details>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-links">
+          <a href="./">home</a> ·
+          <a href="./studio.html">studio</a> ·
+          <a href="./proof.html">proof</a> ·
+          <a href="./docs.html">docs</a> ·
+          <a href="./rules.html">rules</a> ·
+          <a href="./llms.txt">llms.txt</a> ·
+          <a href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer">github</a>
+        </div>
+        <div>MIT License · BillShock v1.1.0 · Privacy-first Plausible analytics hook · Zero external runtime dependencies</div>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+    <script src="./app.js?v=1.1.0"></script>
+  </body>
+</html>

@@ -1,8 +1,11 @@
 # BillShock — Runaway-Cost & Spend-Safety Auditor
 
 [![CI](https://github.com/codesphere-u/billshock/actions/workflows/ci.yml/badge.svg)](https://github.com/codesphere-u/billshock/actions/workflows/ci.yml)
+[![Website](https://img.shields.io/badge/Website-codesphere--u.github.io%2Fbillshock-8ce071?labelColor=172b1e)](https://codesphere-u.github.io/billshock/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+
+> **[Live Website](https://codesphere-u.github.io/billshock/)** · **[Interactive Studio](https://codesphere-u.github.io/billshock/studio.html)** · **[Benchmarks & Proof](https://codesphere-u.github.io/billshock/proof.html)** · **[Documentation](https://codesphere-u.github.io/billshock/docs.html)** · **[All 16 Rules](https://codesphere-u.github.io/billshock/rules.html)** · **[llms.txt](llms.txt)**
 
 **AI coding agents make features work on localhost—and quietly ship \$10,000 cloud bills to production.**  
 **BillShock** is a deterministic, zero-dependency Agent Skill & CI gate that audits JavaScript/TypeScript, React/Next.js, Python (FastAPI/SQLAlchemy/Django), `vercel.json`, and GitHub Actions schedules for infinite request loops, uncapped AI token bombs, N+1 DB egress, hung serverless retries, connection-pool leaks, and cost guardrail regressions before you deploy.
@@ -120,7 +123,7 @@ jobs:
 ### Runaway App (`tests/fixtures/runaway_app`)
 
 ```text
-BillShock v1.0.4 — Spend-Safety & Runaway-Cost Report
+BillShock v1.1.0 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/runaway_app | Files scanned: 4 | AI calls: 2 | DB ops: 1 | HTTP: 5 | Crons: 1
 Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 
@@ -142,7 +145,7 @@ Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
 ### Hardened App (`tests/fixtures/clean_app`)
 
 ```text
-BillShock v1.0.4 — Spend-Safety & Runaway-Cost Report
+BillShock v1.1.0 — Spend-Safety & Runaway-Cost Report
 Target: /Users/darka/.gemini/antigravity/scratch/billshock/tests/fixtures/clean_app | Files scanned: 3 | AI calls: 1 | DB ops: 1 | HTTP: 3 | Crons: 2
 Score:  100/100 (SAFE)  [critical=0 high=0 medium=0 low=0]
 
@@ -162,7 +165,7 @@ No runaway loops, uncapped AI calls, unbounded scans, or cost regressions detect
 | **`LEAK_POOL`** | `BILL012`–`BILL013` | Per-request `PrismaClient`/`Pool`/`create_engine` creation; unbounded module-level `{}`/`[]`/`Map`/`Set` mutated in handlers |
 | **`INFRA_CRON` / `DIFF`** | `BILL014`–`BILL016` | Sub-5-minute crons or `maxDuration > 300`; `--diff`/`--staged` removing `ratelimit`/`max_tokens`/`LIMIT`/`timeout=` guards |
 
-Full rule specifications live in [`skills/billshock/references/rules.md`](skills/billshock/references/rules.md), and copy-paste production fixes live in [`skills/billshock/references/remediation.md`](skills/billshock/references/remediation.md).
+Full rule specifications live in [`skills/billshock/references/rules.md`](skills/billshock/references/rules.md), copy-paste production fixes live in [`skills/billshock/references/remediation.md`](skills/billshock/references/remediation.md), and step-by-step onboarding guides live in [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) and [`docs/CI_AND_REMEDIATION.md`](docs/CI_AND_REMEDIATION.md).
 
 ---
 

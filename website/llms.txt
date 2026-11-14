@@ -1,0 +1,27 @@
+# BillShock
+
+> Deterministic, zero-dependency Agent Skill, CLI & GitHub Action (`BILL001`–`BILL016`) exposing runaway loops, uncapped AI token bombs, N+1 DB egress, hung retries, connection-pool leaks, aggressive crons, and PR guardrail regressions before deploy.
+
+- Live Website: https://codesphere-u.github.io/billshock/
+- Interactive Studio: https://codesphere-u.github.io/billshock/studio.html
+- Before/After Benchmarks: https://codesphere-u.github.io/billshock/proof.html
+- Documentation: https://codesphere-u.github.io/billshock/docs.html
+- Rule Catalog (BILL001–BILL016): https://codesphere-u.github.io/billshock/rules.html
+- Source Code & Action: https://github.com/codesphere-u/billshock
+- Full LLM Context: https://codesphere-u.github.io/billshock/llms-full.txt
+
+## Quick Install
+
+- AI Agent Skill (`skills.sh`): `npx skills add codesphere-u/billshock`
+- Claude Code Plugin: `/plugin install billshock --marketplace codesphere-u/billshock`
+- Ephemeral CLI: `uvx --from git+https://github.com/codesphere-u/billshock@v1 billshock . --diff HEAD`
+- GitHub Action: `uses: codesphere-u/billshock@v1`
+
+## 6 Spend-Safety Pillars
+
+- `EFFECT_LOOP` (`BILL001`–`BILL002`): React `useEffect` fetch loops without dependency arrays; `<1000ms` polling timers.
+- `AI_BOMB` (`BILL003`–`BILL005`): Uncapped LLM calls missing `max_tokens`; paid SDKs in loops; public endpoints lacking auth or rate limiters.
+- `DB_EGRESS` (`BILL006`–`BILL008`): N+1 queries inside loops; unbounded `findMany`/`select` route scans; uncapped `Promise.all(items.map(...))`.
+- `RETRY_HANG` (`BILL009`–`BILL011`): Infinite `while True` retry loops; timeout-free outbound HTTP; long `maxDuration` wrapping uncapped calls.
+- `LEAK_POOL` (`BILL012`–`BILL013`): Per-request DB clients/engines; unbounded module-level caches.
+- `INFRA_CRON` & `DIFF_REGRESSION` (`BILL014`–`BILL016`): Sub-5-minute crons (`* * * * *`); `--diff`/`--staged` guardrail removals.

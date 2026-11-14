@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#fffdf2"/>
+  <rect x="44" y="44" width="1112" height="542" rx="28" fill="#fbf9ee" stroke="#172b1e" stroke-width="3" stroke-opacity="0.14"/>
+
+  <!-- Spend-Shield Mascot Badge -->
+  <g transform="translate(88 128)">
+    <rect x="86" y="4" width="44" height="18" rx="9" fill="#fde047" stroke="#172b1e" stroke-width="5"/>
+    <path d="M108 26L188 60V128C188 182 152 224 108 242C64 224 28 182 28 128V60L108 26Z" fill="#8ce071" stroke="#172b1e" stroke-width="6" stroke-linejoin="round"/>
+    <rect x="58" y="80" width="100" height="84" rx="18" fill="#fffdf2" stroke="#172b1e" stroke-width="5"/>
+    <path d="M114 92L91 124H108L102 152L126 118H109L114 92Z" fill="#fde047" stroke="#172b1e" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="8" y="108" width="20" height="36" rx="7" fill="#fde047" stroke="#172b1e" stroke-width="4.5"/>
+    <rect x="188" y="108" width="20" height="36" rx="7" fill="#fde047" stroke="#172b1e" stroke-width="4.5"/>
+  </g>
+
+  <!-- Title & Tagline -->
+  <text x="348" y="182" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="68" font-weight="800" letter-spacing="-1.8" fill="none" stroke="#172b1e" stroke-width="9" stroke-linejoin="round">billshock</text>
+  <text x="348" y="182" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="68" font-weight="800" letter-spacing="-1.8" fill="#8ce071">billshock</text>
+
+  <text x="348" y="246" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="700" fill="#172b1e">Catch $10k cloud &amp; AI bills before production.</text>
+  <text x="348" y="294" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="23" font-weight="500" fill="#3a4d3f">16 deterministic BILL001–BILL016 checks · Pure Python 3.10+ stdlib · SARIF CI gate</text>
+
+  <!-- Pillar & Score Pills -->
+  <rect x="348" y="344" width="236" height="62" rx="14" fill="#8ce071" stroke="#172b1e" stroke-width="2.5"/>
+  <text x="466" y="383" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="#14532d">100/100 SAFE Gate</text>
+
+  <rect x="604" y="344" width="244" height="62" rx="14" fill="#fde047" stroke="#172b1e" stroke-width="2.5"/>
+  <text x="726" y="383" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="#854d0e">16 BILL Rules</text>
+
+  <rect x="868" y="344" width="236" height="62" rx="14" fill="#fffdf2" stroke="#172b1e" stroke-width="2.5"/>
+  <text x="986" y="383" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="700" fill="#172b1e">Zero Dependencies</text>
+
+  <rect x="348" y="438" width="756" height="72" rx="14" fill="#f6f4e6" stroke="#172b1e" stroke-opacity="0.18" stroke-width="2"/>
+  <text x="376" y="482" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" font-weight="600" fill="#172b1e">$ npx skills add codesphere-u/billshock &amp;&amp; billshock . --diff HEAD</text>
+</svg>

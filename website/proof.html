@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BillShock Proof — Before/After Benchmarks &amp; False-Positive Matrix</title>
+    <meta
+      name="description"
+      content="Compare BillShock 0/100 Runaway App vs 100/100 Hardened App fixtures, real-world false-positive guards, and CI tooling benchmarks."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#fffdf2" />
+    <link rel="canonical" href="https://codesphere-u.github.io/billshock/proof.html" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=1.1.0" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BillShock Proof — Before/After Benchmarks &amp; Precision Matrix" />
+    <meta property="og:description" content="0/100 BILL SHOCK ALERT to 100/100 SAFE across 16 deterministic checks with zero runtime dependencies." />
+    <meta property="og:image" content="https://codesphere-u.github.io/billshock/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      [hidden] { display: none !important; }
+      .brand-wordmark-svg { height: 36px; width: 196px; display: block; }
+    </style>
+    <link rel="stylesheet" href="./styles.css?v=1.1.0" />
+  </head>
+  <body data-analytics="plausible">
+    <div class="page-col">
+      <header class="site-header">
+        <a class="brand-link" href="./" aria-label="BillShock home">
+          <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 218 40" fill="none" role="img" aria-label="billshock">
+            <path d="M16 5L28 10.5V20C28 27.6 22.8 33 16 35.5C9.2 33 4 27.6 4 20V10.5L16 5Z" fill="#8ce071" stroke="#172b1e" stroke-width="2.6" stroke-linejoin="round" />
+            <path d="M17.5 11.5L11 20.5H16.2L14.6 28.5L21 19.5H15.8L17.5 11.5Z" fill="#fde047" stroke="#172b1e" stroke-width="1.8" stroke-linejoin="round" />
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="none" stroke="#172b1e" stroke-width="4" stroke-linejoin="round">billshock</text>
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="#8ce071">billshock</text>
+          </svg>
+        </a>
+
+        <nav class="header-nav" aria-label="Primary navigation">
+          <a href="./studio.html">studio</a>
+          <a class="active" href="./proof.html">proof</a>
+          <a href="./docs.html">docs</a>
+          <a href="./rules.html">rules</a>
+          <a class="icon-link" href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+            </svg>
+          </a>
+          <a class="nav-pill" href="https://github.com/codesphere-u/billshock/releases" target="_blank" rel="noopener noreferrer">v1.1.0</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="page-hero">
+          <h1>Proof, Benchmarks &amp; Precision</h1>
+          <p class="hero-sub">Verified before/after fixture telemetry from <code>pytest</code> and real-world false-positive hardening across production Python and TypeScript repositories.</p>
+        </section>
+
+        <section class="handy-card" aria-label="Interactive before/after fixture toggle">
+          <div class="handy-tabs-bar">
+            <div class="handy-tabs" role="tablist">
+              <button type="button" class="handy-tab active" id="proof-before-btn" data-proof="before" aria-selected="true">Before (0/100 ALERT)</button>
+              <button type="button" class="handy-tab" id="proof-after-btn" data-proof="after" aria-selected="false">After (100/100 SAFE)</button>
+            </div>
+            <span class="version-tag" id="proof-badge">8 critical · 11 high · 5 medium</span>
+          </div>
+
+          <div class="score-row">
+            <div class="score-cell"><span>Score</span><strong id="pr-score">0/100</strong></div>
+            <div class="score-cell"><span>Grade</span><strong id="pr-grade">ALERT</strong></div>
+            <div class="score-cell"><span>Critical</span><strong id="pr-crit">8</strong></div>
+            <div class="score-cell"><span>Exit Code</span><strong id="pr-exit">1</strong></div>
+          </div>
+
+          <pre class="code-block" id="proof-pre">$ billshock tests/fixtures/runaway_app --fail-on high --no-color
+
+BillShock v1.1.0 — Spend-Safety &amp; Runaway-Cost Report
+Target: tests/fixtures/runaway_app | Files scanned: 4 | AI calls: 2 | DB ops: 1 | HTTP: 5 | Crons: 1
+Score:  0/100 (BILL SHOCK ALERT)  [critical=8 high=11 medium=5 low=0]
+
+[CRITICAL] BILL004 backend/jobs.py:20 — Paid SDK call `openai.chat.completions.create` inside loop.
+[CRITICAL] BILL005 backend/jobs.py:20 — Endpoint `run_batch` exposes paid API without auth/ratelimit.
+[CRITICAL] BILL009 backend/jobs.py:31 — Unbounded `while True:` executes HTTP without retry ceiling.
+[CRITICAL] BILL001 src/components/AutoChat.tsx:7 — useEffect invokes fetch without dependency array.
+[HIGH    ] BILL003 src/app/api/generate/route.ts:25 — LLM call omits `max_tokens` ceiling.
+[HIGH    ] BILL007 src/app/api/export/route.ts:15 — Unbounded prisma.order.findMany() table scan.
+[MEDIUM  ] BILL014 vercel.json:5 — Sub-5-minute cron schedule `* * * * *` runs continuously.</pre>
+        </section>
+
+        <article class="editorial-article">
+          <h2>Why Static Cost Guardrails Beat Reactive Billing Alerts</h2>
+          <p>Cloud provider billing alerts only notify your team hours after an unthrottled endpoint or infinite <code>useEffect</code> storm has already burned credits. BillShock executes deterministically on your diff before code leaves localhost or merges in GitHub Actions.</p>
+
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th>Capability</th>
+                  <th class="col-bs">BillShock v1.1.0</th>
+                  <th>Cloud Billing Alerts</th>
+                  <th>Generic Linters</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Catches bugs before deploy</td>
+                  <td class="col-bs"><span class="pill pill-good">Yes (localhost + PR)</span></td>
+                  <td>No (hours after spend)</td>
+                  <td>Partial syntax only</td>
+                </tr>
+                <tr>
+                  <td>Detects missing <code>max_tokens</code> + rate limit</td>
+                  <td class="col-bs"><span class="pill pill-good">BILL003 + BILL005</span></td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>Tracks N+1 DB loops &amp; unpaginated scans</td>
+                  <td class="col-bs"><span class="pill pill-good">BILL006 + BILL007</span></td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>Blocks deleted guardrails in PR diffs</td>
+                  <td class="col-bs"><span class="pill pill-good">BILL015 + BILL016</span></td>
+                  <td>No</td>
+                  <td>No</td>
+                </tr>
+                <tr>
+                  <td>Runtime dependencies &amp; cost</td>
+                  <td class="col-bs"><span class="pill pill-green">Python 3.10+ stdlib · MIT</span></td>
+                  <td>Usage bill already incurred</td>
+                  <td>Node / multi-plugin stack</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2>False-Positive Hardening Verified in Tests</h2>
+          <p>Production codebases are noisy. BillShock's scanner and test suite explicitly guard against common patterns that trip naive regex tools:</p>
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th>Production Pattern</th>
+                  <th>Protected Rule</th>
+                  <th>Behavior</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>&lt;p&gt;We're ready&lt;/p&gt;</code> JSX text apostrophe</td>
+                  <td><code>BILL001</code>, <code>BILL002</code></td>
+                  <td>String state resets cleanly at newline</td>
+                </tr>
+                <tr>
+                  <td>Supabase SSR <code>createClient()</code> in Route Handlers</td>
+                  <td><code>BILL012</code>, <code>BILL007</code></td>
+                  <td>Recognizes HTTP cookie client &amp; <code>head</code>/<code>.limit()</code> chains</td>
+                </tr>
+                <tr>
+                  <td>Python <code>dict.get()</code> / <code>queue.get()</code></td>
+                  <td><code>BILL006</code>, <code>BILL009</code></td>
+                  <td>Exact receiver matching distinguishes DB sessions from dicts/queues</td>
+                </tr>
+                <tr>
+                  <td><code>Paginator(Order.objects.all(), 50)</code></td>
+                  <td><code>BILL007</code></td>
+                  <td>Django paginator, <code>.iterator()</code>, <code>.count()</code> exempted</td>
+                </tr>
+                <tr>
+                  <td><code>axios.create({ timeout: 3000 })</code></td>
+                  <td><code>BILL010</code></td>
+                  <td>Client instance default timeout tracked across file</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-links">
+          <a href="./">home</a> ·
+          <a href="./studio.html">studio</a> ·
+          <a href="./proof.html">proof</a> ·
+          <a href="./docs.html">docs</a> ·
+          <a href="./rules.html">rules</a> ·
+          <a href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer">github</a>
+        </div>
+        <div>MIT License · BillShock v1.1.0 · Privacy-first Plausible analytics hook</div>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+    <script src="./app.js?v=1.1.0"></script>
+  </body>
+</html>
