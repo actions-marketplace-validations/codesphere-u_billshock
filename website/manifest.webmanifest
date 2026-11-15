@@ -1,0 +1,16 @@
+{
+  "name": "BillShock — Runaway-Cost & Spend-Safety Auditor",
+  "short_name": "BillShock",
+  "description": "Deterministic Agent Skill, CLI & GitHub Action exposing infinite loops, uncapped AI token bombs, N+1 DB egress & cost regressions.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fffdf2",
+  "theme_color": "#8ce071",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

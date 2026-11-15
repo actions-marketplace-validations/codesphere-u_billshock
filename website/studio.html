@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BillShock Studio — Live Spend Scanner, Blast-Radius Simulator &amp; SARIF Inspector</title>
+    <meta
+      name="description"
+      content="Test BillShock BILL001–BILL016 rules live in-browser, estimate 24h runaway cloud burn, and inspect SARIF 2.1.0 and git diff outputs."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#fffdf2" />
+    <link rel="canonical" href="https://codesphere-u.github.io/billshock/studio.html" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=1.1.0" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BillShock Interactive Studio — Live Scanner &amp; Blast-Radius Simulator" />
+    <meta property="og:description" content="Audit React/Next.js/Python snippets in browser across BILL001–BILL016, simulate overnight burn, and preview SARIF 2.1.0 output." />
+    <meta property="og:image" content="https://codesphere-u.github.io/billshock/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      [hidden] { display: none !important; }
+      .brand-wordmark-svg { height: 36px; width: 196px; display: block; }
+    </style>
+    <link rel="stylesheet" href="./styles.css?v=1.1.0" />
+  </head>
+  <body data-analytics="plausible">
+    <div class="page-col">
+      <header class="site-header">
+        <a class="brand-link" href="./" aria-label="BillShock home">
+          <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 218 40" fill="none" role="img" aria-label="billshock">
+            <path d="M16 5L28 10.5V20C28 27.6 22.8 33 16 35.5C9.2 33 4 27.6 4 20V10.5L16 5Z" fill="#8ce071" stroke="#172b1e" stroke-width="2.6" stroke-linejoin="round" />
+            <path d="M17.5 11.5L11 20.5H16.2L14.6 28.5L21 19.5H15.8L17.5 11.5Z" fill="#fde047" stroke="#172b1e" stroke-width="1.8" stroke-linejoin="round" />
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="none" stroke="#172b1e" stroke-width="4" stroke-linejoin="round">billshock</text>
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="#8ce071">billshock</text>
+          </svg>
+        </a>
+
+        <nav class="header-nav" aria-label="Primary navigation">
+          <a class="active" href="./studio.html">studio</a>
+          <a href="./proof.html">proof</a>
+          <a href="./docs.html">docs</a>
+          <a href="./rules.html">rules</a>
+          <a class="icon-link" href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+            </svg>
+          </a>
+          <a class="nav-pill" href="https://github.com/codesphere-u/billshock/releases" target="_blank" rel="noopener noreferrer">v1.1.0</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="page-hero">
+          <h1>Interactive Studio</h1>
+          <p class="hero-sub">Audit React/Next.js/Python snippets against <code>BILL001–BILL016</code>, estimate 24h cloud blast radius, and inspect CI/SARIF artifacts locally.</p>
+        </section>
+
+        <section class="studio-frame" aria-label="BillShock interactive workbench">
+          <div class="handy-tabs-bar">
+            <div class="handy-tabs" role="tablist">
+              <button type="button" class="handy-tab active" data-tab="scanner" aria-selected="true">Spend Scanner</button>
+              <button type="button" class="handy-tab" data-tab="blast" aria-selected="false">Blast-Radius Sim</button>
+              <button type="button" class="handy-tab" data-tab="artifacts" aria-selected="false">Diff &amp; SARIF</button>
+            </div>
+            <span class="version-tag">v1.1.0</span>
+          </div>
+
+          <!-- Tab 1: Live Spend Scanner -->
+          <div class="studio-panel active" id="panel-scanner">
+            <div class="toolbar-between" style="margin-bottom:0.75rem;">
+              <div class="preset-pills" id="scanner-presets">
+                <button type="button" class="chip-btn active" data-preset="nextjs_ai">Next.js + OpenAI Bomb</button>
+                <button type="button" class="chip-btn" data-preset="react_prisma">React Loop + Prisma N+1</button>
+                <button type="button" class="chip-btn" data-preset="python_worker">FastAPI Worker</button>
+                <button type="button" class="chip-btn" data-preset="hardened">Hardened App</button>
+              </div>
+              <button type="button" class="handy-pill-btn gold" id="apply-remediation-btn">Apply remediation fix</button>
+            </div>
+
+            <div class="field">
+              <label for="scanner-code">Route, component, worker, or vercel.json snippet to evaluate live</label>
+              <textarea id="scanner-code" class="textarea" spellcheck="false"></textarea>
+            </div>
+
+            <div class="score-row">
+              <div class="score-cell"><span>Score</span><strong id="sc-score">0/100</strong></div>
+              <div class="score-cell"><span>Grade</span><strong id="sc-grade">ALERT</strong></div>
+              <div class="score-cell"><span>Critical</span><strong id="sc-crit">0</strong></div>
+              <div class="score-cell"><span>High / Med</span><strong id="sc-hm">0 / 0</strong></div>
+            </div>
+
+            <div class="rw-list" id="scanner-findings"></div>
+          </div>
+
+          <!-- Tab 2: Cloud Blast-Radius Simulator -->
+          <div class="studio-panel" id="panel-blast" hidden>
+            <div class="form-row-2">
+              <div class="field">
+                <label for="blast-scenario">Runaway cost failure mode</label>
+                <select id="blast-scenario" class="select">
+                  <option value="effect_storm">BILL001 — React useEffect infinite fetch loop</option>
+                  <option value="ai_bomb" selected>BILL003/005 — Public uncapped LLM endpoint</option>
+                  <option value="db_egress">BILL006/007 — Unbounded DB scan + N+1 loop</option>
+                  <option value="cron_burn">BILL014 — * * * * * every-minute cloud cron</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="blast-scale">Traffic / execution intensity</label>
+                <select id="blast-scale" class="select">
+                  <option value="low">Quiet staging (25 requests / min)</option>
+                  <option value="medium" selected>Normal launch traffic (200 requests / min)</option>
+                  <option value="spike">Unthrottled bot / retry storm (1,500 requests / min)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toolbar-between" style="margin-bottom:0.65rem;">
+              <span class="eyebrow-label" style="margin:0;">Estimated 24-hour impact vs hardened ceiling</span>
+              <div class="handy-btn-row" style="margin:0;">
+                <button type="button" class="handy-pill-btn" id="run-blast-btn">Simulate 24h burn</button>
+                <button type="button" class="action-mini" id="copy-blast-btn">Copy report</button>
+              </div>
+            </div>
+
+            <div class="score-row">
+              <div class="score-cell"><span>Unchecked 24h</span><strong id="bl-unchecked">$4,320</strong></div>
+              <div class="score-cell"><span>Hardened 24h</span><strong id="bl-hardened">$14</strong></div>
+              <div class="score-cell"><span>Rule Blocked</span><strong id="bl-rule">BILL003/005</strong></div>
+              <div class="score-cell"><span>Savings</span><strong id="bl-saved">99.7%</strong></div>
+            </div>
+
+            <pre class="code-block" id="blast-pre"></pre>
+          </div>
+
+          <!-- Tab 3: Diff & SARIF Artifacts -->
+          <div class="studio-panel" id="panel-artifacts" hidden>
+            <div class="toolbar-between" style="margin-bottom:0.75rem;">
+              <div class="preset-pills" id="artifact-tabs">
+                <button type="button" class="chip-btn active" data-art="diff">--diff HEAD (BILL015)</button>
+                <button type="button" class="chip-btn" data-art="sarif">billshock.sarif (2.1.0)</button>
+                <button type="button" class="chip-btn" data-art="baseline">.billshock-baseline.json</button>
+                <button type="button" class="chip-btn" data-art="action">action.yml Summary</button>
+              </div>
+              <button type="button" class="action-mini" id="copy-artifact-btn">Copy artifact</button>
+            </div>
+            <p class="diag-note" id="artifact-note">CI blocks pull requests whenever rate limits, token ceilings, LIMITs, or HTTP timeouts are stripped without replacement.</p>
+            <pre class="code-block" id="artifact-pre"></pre>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-links">
+          <a href="./">home</a> ·
+          <a href="./studio.html">studio</a> ·
+          <a href="./proof.html">proof</a> ·
+          <a href="./docs.html">docs</a> ·
+          <a href="./rules.html">rules</a> ·
+          <a href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer">github</a>
+        </div>
+        <div>MIT License · BillShock v1.1.0 · Privacy-first Plausible analytics hook</div>
+      </footer>
+    </div>
+
+    <script type="application/json" id="billshock-studio-presets">
+      {
+        "nextjs_ai": {
+          "bad": "import OpenAI from \"openai\";\nconst openai = new OpenAI();\nconst responseCache: Record<string, string> = {};\nexport const maxDuration = 120;\n\nexport async function POST(request: Request) {\n  const { prompt } = await request.json();\n  const upstream = await fetch(\"https://upstream.example.com/ctx\");\n  const completion = await openai.chat.completions.create({\n    model: \"gpt-4o\",\n    messages: [{ role: \"user\", content: prompt }]\n  });\n  responseCache[prompt] = completion.choices[0]?.message?.content ?? \"\";\n  return Response.json(completion);\n}",
+          "fixed": "import { Ratelimit } from \"@upstash/ratelimit\";\nimport { Redis } from \"@upstash/redis\";\nimport OpenAI from \"openai\";\n\nconst openai = new OpenAI();\nconst ratelimit = new Ratelimit({ redis: Redis.fromEnv(), limiter: Ratelimit.slidingWindow(10, \"1 m\") });\nexport const maxDuration = 30;\n\nexport async function POST(request: Request) {\n  const ip = request.headers.get(\"x-forwarded-for\") ?? \"anon\";\n  const { success } = await ratelimit.limit(ip);\n  if (!success) return Response.json({ error: \"rate limited\" }, { status: 429 });\n  const { prompt } = await request.json();\n  const upstream = await fetch(\"https://upstream.example.com/ctx\", { signal: AbortSignal.timeout(4000) });\n  const completion = await openai.chat.completions.create({\n    model: \"gpt-4o-mini\",\n    max_tokens: 512,\n    messages: [{ role: \"user\", content: prompt }]\n  });\n  return Response.json({ ok: upstream.ok, completion });\n}"
+        },
+        "react_prisma": {
+          "bad": "import { useEffect } from \"react\";\nimport { PrismaClient } from \"@prisma/client\";\n\nexport function Dashboard() {\n  useEffect(() => {\n    fetch(\"/api/stats\");\n  });\n  setInterval(() => fetch(\"/api/ping\"), 250);\n  return <main />;\n}\n\nexport async function GET() {\n  const prisma = new PrismaClient();\n  const orders = await prisma.order.findMany({});\n  for (const item of orders) {\n    await prisma.user.findUnique({ where: { id: item.userId } });\n  }\n  return Response.json({ orders });\n}",
+          "fixed": "import { useEffect } from \"react\";\nimport { PrismaClient } from \"@prisma/client\";\n\nconst globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };\nconst prisma = globalForPrisma.prisma ?? new PrismaClient();\n\nexport function Dashboard() {\n  useEffect(() => {\n    const ac = new AbortController();\n    fetch(\"/api/stats\", { signal: ac.signal });\n    return () => ac.abort();\n  }, []);\n  return <main />;\n}\n\nexport async function GET() {\n  const orders = await prisma.order.findMany({ take: 50, select: { id: true, userId: true } });\n  const users = await prisma.user.findMany({ where: { id: { in: orders.map((o) => o.userId) } }, take: 50 });\n  return Response.json({ orders, users });\n}"
+        },
+        "python_worker": {
+          "bad": "import openai\nimport requests\nfrom fastapi import APIRouter\n\nrouter = APIRouter()\n\n@router.post(\"/run-batch\")\ndef run_batch(prompts: list[str]):\n    results = []\n    for p in prompts:\n        results.append(openai.chat.completions.create(model=\"gpt-4o\", messages=[{\"role\": \"user\", \"content\": p}]))\n    while True:\n        requests.get(\"https://metrics.example.com/ping\")\n        break\n    return results",
+          "fixed": "from fastapi import APIRouter, Depends\nimport httpx\nimport openai\n\nrouter = APIRouter()\nMAX_RETRIES = 3\n\n@router.post(\"/run-batch\")\ndef run_batch(prompts: list[str], user=Depends(require_auth), _limit=Depends(rate_limiter)):\n    bounded = prompts[:10]\n    res = httpx.get(\"https://metrics.example.com/ping\", timeout=3.0)\n    return [\n        openai.chat.completions.create(\n            model=\"gpt-4o-mini\",\n            max_tokens=256,\n            messages=[{\"role\": \"user\", \"content\": p}],\n        )\n        for p in bounded\n    ], res.status_code"
+        },
+        "hardened": {
+          "bad": "import { Ratelimit } from \"@upstash/ratelimit\";\nimport OpenAI from \"openai\";\nimport { PrismaClient } from \"@prisma/client\";\n\nconst globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient();\nconst openai = new OpenAI();\nconst ratelimit = new Ratelimit({ limiter: Ratelimit.slidingWindow(20, \"1 m\") });\n\nexport async function POST(req: Request) {\n  const { success } = await ratelimit.limit(req.headers.get(\"x-forwarded-for\") ?? \"anon\");\n  if (!success) return Response.json({ error: \"throttled\" }, { status: 429 });\n  const rows = await prisma.order.findMany({ take: 25 });\n  const out = await openai.chat.completions.create({\n    model: \"gpt-4o-mini\",\n    max_tokens: 400,\n    messages: [{ role: \"user\", content: String(rows.length) }]\n  });\n  return Response.json({ out });\n}",
+          "fixed": "import { Ratelimit } from \"@upstash/ratelimit\";\nimport OpenAI from \"openai\";\nimport { PrismaClient } from \"@prisma/client\";\n\nconst globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };\nexport const prisma = globalForPrisma.prisma ?? new PrismaClient();\nconst openai = new OpenAI();\nconst ratelimit = new Ratelimit({ limiter: Ratelimit.slidingWindow(20, \"1 m\") });\n\nexport async function POST(req: Request) {\n  const { success } = await ratelimit.limit(req.headers.get(\"x-forwarded-for\") ?? \"anon\");\n  if (!success) return Response.json({ error: \"throttled\" }, { status: 429 });\n  const rows = await prisma.order.findMany({ take: 25 });\n  const out = await openai.chat.completions.create({\n    model: \"gpt-4o-mini\",\n    max_tokens: 400,\n    messages: [{ role: \"user\", content: String(rows.length) }]\n  });\n  return Response.json({ out });\n}"
+        }
+      }
+    </script>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+    <script src="./app.js?v=1.1.0"></script>
+  </body>
+</html>

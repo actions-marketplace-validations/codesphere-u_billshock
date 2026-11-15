@@ -5,6 +5,13 @@ All notable changes to **BillShock** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-11-14
+
+### Added
+- **Handy-Inspired Multi-Page Spend-Safety Website (`website/`)**: Launched 5 dedicated pages ([`index.html`](website/index.html), [`studio.html`](website/studio.html), [`proof.html`](website/proof.html), [`docs.html`](website/docs.html), [`rules.html`](website/rules.html)) styled in Spend-Shield Spring Green (`#8ce071`) and Volt Meter Gold (`#fde047`) on Warm Ivory Paper (`#fffdf2`) with a custom Spend-Breaker Wattmeter Shield mascot and outlined `billshock` vector wordmark.
+- **Interactive Browser Workbench (`website/studio.html`)**: Live `BILL001`–`BILL014` spend scanner with one-click remediation fixes, 24h cloud blast-radius cost simulator, and interactive `--diff HEAD` / SARIF 2.1.0 / baseline artifact viewer.
+- **Repository Docs, GEO/SEO & GitHub Pages**: Added [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md), [`docs/CI_AND_REMEDIATION.md`](docs/CI_AND_REMEDIATION.md), Schema.org `@graph` JSON-LD, OpenGraph/Twitter SVG card, [`llms.txt`](llms.txt), [`llms-full.txt`](llms-full.txt), [`sitemap.xml`](website/sitemap.xml), [`robots.txt`](website/robots.txt), [`.github/workflows/pages.yml`](.github/workflows/pages.yml), and [`tests/test_website_and_docs.py`](tests/test_website_and_docs.py).
+
 ## [1.0.4] - 2026-11-14
 
 ### Fixed

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BillShock Rules — Complete BILL001–BILL016 Specification &amp; Scoring Rubric</title>
+    <meta
+      name="description"
+      content="Browse all 16 BillShock spend-safety rules (BILL001–BILL016) across EFFECT_LOOP, AI_BOMB, DB_EGRESS, RETRY_HANG, LEAK_POOL, INFRA_CRON, and DIFF_REGRESSION."
+    />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#fffdf2" />
+    <link rel="canonical" href="https://codesphere-u.github.io/billshock/rules.html" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg?v=1.1.0" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BillShock Rules — BILL001–BILL016 Spend-Safety Reference" />
+    <meta property="og:description" content="Deterministic rule severity weights, false-positive guards, and production fixes for BILL001–BILL016." />
+    <meta property="og:image" content="https://codesphere-u.github.io/billshock/og-image.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      [hidden] { display: none !important; }
+      .brand-wordmark-svg { height: 36px; width: 196px; display: block; }
+    </style>
+    <link rel="stylesheet" href="./styles.css?v=1.1.0" />
+  </head>
+  <body data-analytics="plausible">
+    <div class="page-col">
+      <header class="site-header">
+        <a class="brand-link" href="./" aria-label="BillShock home">
+          <svg class="brand-wordmark-svg" width="196" height="36" viewBox="0 0 218 40" fill="none" role="img" aria-label="billshock">
+            <path d="M16 5L28 10.5V20C28 27.6 22.8 33 16 35.5C9.2 33 4 27.6 4 20V10.5L16 5Z" fill="#8ce071" stroke="#172b1e" stroke-width="2.6" stroke-linejoin="round" />
+            <path d="M17.5 11.5L11 20.5H16.2L14.6 28.5L21 19.5H15.8L17.5 11.5Z" fill="#fde047" stroke="#172b1e" stroke-width="1.8" stroke-linejoin="round" />
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="none" stroke="#172b1e" stroke-width="4" stroke-linejoin="round">billshock</text>
+            <text x="36" y="28" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22.5" font-weight="800" letter-spacing="-0.6" fill="#8ce071">billshock</text>
+          </svg>
+        </a>
+
+        <nav class="header-nav" aria-label="Primary navigation">
+          <a href="./studio.html">studio</a>
+          <a href="./proof.html">proof</a>
+          <a href="./docs.html">docs</a>
+          <a class="active" href="./rules.html">rules</a>
+          <a class="icon-link" href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+            </svg>
+          </a>
+          <a class="nav-pill" href="https://github.com/codesphere-u/billshock/releases" target="_blank" rel="noopener noreferrer">v1.1.0</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="page-hero">
+          <h1>Rule Catalog &amp; Scoring Rubric</h1>
+          <p class="hero-sub">Every deterministic spend-safety check in <code>RULE_META</code> (`BILL001`–`BILL016`), its severity weight, and false-positive guards.</p>
+        </section>
+
+        <section class="handy-card" aria-label="Scoring formula summary">
+          <div class="score-row">
+            <div class="score-cell"><span>Critical</span><strong>-18 pts</strong></div>
+            <div class="score-cell"><span>High</span><strong>-9 pts</strong></div>
+            <div class="score-cell"><span>Medium</span><strong>-4 pts</strong></div>
+            <div class="score-cell"><span>Safe Grade</span><strong>90–100</strong></div>
+          </div>
+          <p class="diag-note">Any <code>CRITICAL</code> finding caps grade below <code>SAFE</code> (`CAUTION` 70–89, `BILL SHOCK ALERT` &lt;70). Suppress intentionally only with inline <code>billshock-ignore: BILL010 - reason</code>.</p>
+        </section>
+
+        <section aria-label="Filter rules">
+          <div class="preset-pills" id="rule-pillar-chips">
+            <button type="button" class="chip-btn active" data-pillar="all">All (16)</button>
+            <button type="button" class="chip-btn" data-pillar="EFFECT_LOOP">Effect Loop</button>
+            <button type="button" class="chip-btn" data-pillar="AI_BOMB">AI Bomb</button>
+            <button type="button" class="chip-btn" data-pillar="DB_EGRESS">DB Egress</button>
+            <button type="button" class="chip-btn" data-pillar="RETRY_HANG">Retry Hang</button>
+            <button type="button" class="chip-btn" data-pillar="LEAK_POOL">Leak &amp; Pool</button>
+            <button type="button" class="chip-btn" data-pillar="INFRA_CRON_DIFF">Infra &amp; Diff</button>
+          </div>
+
+          <div class="rules-filter">
+            <input class="input" id="rule-search" type="search" placeholder="Search rules by ID, keyword, Prisma, max_tokens, cron..." aria-label="Search BillShock rules" />
+            <select class="select" id="rule-sev-filter" aria-label="Filter by severity">
+              <option value="all">All severities</option>
+              <option value="critical">CRITICAL only</option>
+              <option value="high">HIGH only</option>
+              <option value="medium">MEDIUM only</option>
+            </select>
+          </div>
+
+          <div class="doc-table-wrap">
+            <table class="doc-table">
+              <thead>
+                <tr>
+                  <th>Rule</th>
+                  <th>Severity</th>
+                  <th>Pillar</th>
+                  <th>What It Exposes &amp; How to Fix</th>
+                </tr>
+              </thead>
+              <tbody id="rules-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section aria-label="Rules FAQ">
+          <h2 class="sec-title">Suppression &amp; CI policy FAQ</h2>
+          <div class="faq-stack">
+            <details class="faq-item">
+              <summary>When is an inline `billshock-ignore` comment appropriate?</summary>
+              <p>Only when an external transport or gateway enforces limits out of band (for example, a Unix domain socket deadline or internal VPC-only admin job). Prefer fixing the missing <code>max_tokens</code>, dependency array, or pagination cap first.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Does `BILL015` trigger when moving a guardrail cleanly within the same file?</summary>
+              <p>No. <code>BILL015</code> counts removed vs added guardrails across the diff of a file and only triggers when net protection decreases without replacement.</p>
+            </details>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <div class="footer-links">
+          <a href="./">home</a> ·
+          <a href="./studio.html">studio</a> ·
+          <a href="./proof.html">proof</a> ·
+          <a href="./docs.html">docs</a> ·
+          <a href="./rules.html">rules</a> ·
+          <a href="https://github.com/codesphere-u/billshock" target="_blank" rel="noopener noreferrer">github</a>
+        </div>
+        <div>MIT License · BillShock v1.1.0 · Privacy-first Plausible analytics hook</div>
+      </footer>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard</div>
+    <script src="./app.js?v=1.1.0"></script>
+  </body>
+</html>

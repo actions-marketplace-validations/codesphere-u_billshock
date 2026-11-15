@@ -1,0 +1,42 @@
+# BillShock — Full Documentation & Rule Context (`v1.1.0`)
+
+## Summary
+
+BillShock (`billshock-audit` v1.1.0) is a deterministic, zero-dependency Python 3.10+ spend-safety and runaway-cost analyzer covering JavaScript, TypeScript, JSX, TSX, Vue, Svelte, Python (AST + FastAPI/SQLAlchemy/Django), `vercel.json`, and `.github/workflows` scheduled jobs.
+
+## Installation Modes
+
+1. **skills.sh**: `npx skills add codesphere-u/billshock`
+   Run: `python3 ~/.agents/skills/billshock/scripts/billshock.py . --diff HEAD --fail-on high --min-score 80`
+2. **Claude Code Plugin**: `/plugin install billshock --marketplace codesphere-u/billshock`
+3. **uvx Zero-Install CLI**: `uvx --from git+https://github.com/codesphere-u/billshock@v1 billshock . --diff HEAD`
+4. **GitHub Actions CI Gate (`codesphere-u/billshock@v1`)**:
+   Inputs: `path`, `diff`, `fail-on`, `min-score`, `baseline`, `sarif-file`
+   Outputs: `score`, `grade`, `critical-count`, `sarif-file`
+
+## Complete Rules (`BILL001`–`BILL016`)
+
+| Rule | Severity | Pillar | Description |
+| :--- | :--- | :--- | :--- |
+| `BILL001` | CRITICAL | `EFFECT_LOOP` | `useEffect`/`useLayoutEffect` calling network I/O without dependency array |
+| `BILL002` | HIGH | `EFFECT_LOOP` | Sub-second polling interval (`<1000ms`) calling network APIs |
+| `BILL003` | HIGH | `AI_BOMB` | Generative LLM API call omits explicit output token ceiling |
+| `BILL004` | CRITICAL | `AI_BOMB` | Paid AI, email, or SMS API called inside unbounded loop |
+| `BILL005` | CRITICAL | `AI_BOMB` | Public HTTP endpoint exposes paid AI/email/SMS API without auth or rate limit |
+| `BILL006` | HIGH | `DB_EGRESS` | N+1 database/ORM query executed inside loop |
+| `BILL007` | HIGH | `DB_EGRESS` | Unbounded database table scan in HTTP endpoint without limit/pagination |
+| `BILL008` | MEDIUM | `DB_EGRESS` | Unbounded `Promise.all(...map())` fan-out over network or DB calls |
+| `BILL009` | CRITICAL | `RETRY_HANG` | Unbounded `while` retry/poll loop without max attempts or termination guard |
+| `BILL010` | MEDIUM | `RETRY_HANG` | Server-side outbound HTTP request omits explicit timeout |
+| `BILL011` | HIGH | `RETRY_HANG` | Zero-delay retry loop or extended `maxDuration` wrapping uncapped calls |
+| `BILL012` | HIGH | `LEAK_POOL` | Database/pool client instantiated inside runtime request handler |
+| `BILL013` | HIGH | `LEAK_POOL` | Unbounded module-level cache or collection mutated in runtime handlers |
+| `BILL014` | MEDIUM | `INFRA_CRON` | High-frequency cloud/workflow cron schedule or excessive function duration |
+| `BILL015` | HIGH | `DIFF_REGRESSION` | Removed spend/rate guardrail (`rate_limit`, `max_tokens`, `timeout`, `LIMIT`) in diff |
+| `BILL016` | CRITICAL | `DIFF_REGRESSION` | Newly introduced sub-5m cron or high-burn guardrail regression in diff |
+
+## Scoring Rubric
+
+- Score starts at `100`
+- Deductions: `CRITICAL` `-18`, `HIGH` `-9`, `MEDIUM` `-4`, `LOW` `-1`
+- Grades: `SAFE` (`90–100` and `critical == 0`), `CAUTION` (`70–89`), `BILL SHOCK ALERT` (`<70`)

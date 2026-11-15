@@ -1,0 +1,11 @@
+# BillShock
+
+> Deterministic, zero-dependency Agent Skill, CLI & GitHub Action (`BILL001`–`BILL016`) exposing runaway loops, uncapped AI token bombs, N+1 DB egress, hung retries, connection-pool leaks, aggressive crons, and PR guardrail regressions before deploy.
+
+- Live Website: https://codesphere-u.github.io/billshock/
+- Interactive Studio: https://codesphere-u.github.io/billshock/studio.html
+- Before/After Benchmarks: https://codesphere-u.github.io/billshock/proof.html
+- Documentation: https://codesphere-u.github.io/billshock/docs.html
+- Rule Catalog (BILL001–BILL016): https://codesphere-u.github.io/billshock/rules.html
+- Source Repository: https://github.com/codesphere-u/billshock
+- Full LLM Context: https://codesphere-u.github.io/billshock/llms-full.txt
